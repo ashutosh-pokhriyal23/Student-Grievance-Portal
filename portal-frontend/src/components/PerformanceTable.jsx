@@ -19,7 +19,7 @@ const PerformanceTable = ({ title, data }) => {
               <th className="px-8 py-4 text-[10px] font-black text-secondary uppercase tracking-widest">Active</th>
               <th className="px-8 py-4 text-[10px] font-black text-secondary uppercase tracking-widest">Avg Time</th>
               <th className="px-8 py-4 text-[10px] font-black text-secondary uppercase tracking-widest">On-Time %</th>
-              <th className="px-8 py-4 text-[10px] font-black text-secondary uppercase tracking-widest">Health</th>
+              <th className="px-8 py-4 text-[10px] font-black text-secondary uppercase tracking-widest">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">

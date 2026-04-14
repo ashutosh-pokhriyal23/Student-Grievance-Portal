@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { getSpaces } from '../api/complaints';
+import StudentNavbar from '../components/StudentNavbar';
 import SpaceCard from '../components/SpaceCard';
 import { 
   LayoutGrid, 
@@ -88,7 +89,8 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="relative">
+    <div className="relative min-h-screen bg-background">
+      <StudentNavbar />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[500px] bg-accent-dept/5 blur-[120px] rounded-full -z-10" />
       <div className="absolute top-40 left-0 w-64 h-64 bg-accent-hostel/5 blur-[100px] rounded-full -z-10" />
 
