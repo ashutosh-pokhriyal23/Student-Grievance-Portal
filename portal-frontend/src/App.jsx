@@ -1,0 +1,65 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import Dashboard from './pages/Dashboard';
+import SpacePage from './pages/SpacePage';
+import ComplaintDetail from './pages/ComplaintDetail';
+import StaffDashboard from './pages/StaffDashboard';
+import StaffSpaceView from './pages/StaffSpaceView';
+import AdminDashboard from './pages/AdminDashboard';
+
+function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-background">
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: {
+              borderRadius: '12px',
+              background: '#1A1A2E',
+              color: '#fff',
+            },
+          }}
+        />
+        
+        {/* Simple Navigation Bar */}
+        <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <a href="/" className="font-sora font-extrabold text-2xl tracking-tight text-primary">
+              <span className="text-accent-dept">Student</span> Grievance
+            </a>
+            <div className="hidden md:flex items-center space-x-6">
+              <a href="/" className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/10 hover:-translate-y-0.5 transition-all">
+                Help Desk
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/space/:spaceId" element={<SpacePage />} />
+          <Route path="/complaint/:id" element={<ComplaintDetail />} />
+          <Route path="/staff" element={<StaffDashboard />} />
+          <Route path="/staff/space/:id" element={<StaffSpaceView />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Routes>
+        
+        <footer className="mt-20 bg-primary/5 py-16 border-t border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <h2 className="font-sora font-extrabold text-xl mb-4">Student Grievance Portal</h2>
+            <p className="text-secondary font-medium max-w-md mx-auto mb-8">
+              Ensuring every voice is heard and every concern is addressed across our campus departments and hostels.
+            </p>
+            <div className="text-xs text-secondary/60 uppercase tracking-widest font-bold">
+              © 2026 • Dedicated to Excellence
+            </div>
+          </div>
+        </footer>
+      </div>
+    </Router>
+  );
+}
+
+export default App;

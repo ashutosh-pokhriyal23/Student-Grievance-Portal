@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Sora:wght@100..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-primary font-dmsans antialiased min-h-screen relative;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(231,100%,96%,1) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, hsla(225,100%,98%,1) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(164,100%,98%,1) 0, transparent 50%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sora font-semibold tracking-tight;
+  }
+}
+
+/* Custom Transitions */
+.card-hover {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.card-hover:hover {
+  @apply -translate-y-0.5 shadow-soft-hover;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
