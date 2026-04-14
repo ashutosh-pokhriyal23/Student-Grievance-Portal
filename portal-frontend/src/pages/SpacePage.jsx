@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getComplaints, getSpaces } from '../api/complaints';
 import ComplaintList from '../components/ComplaintList';
 import ComplaintForm from '../components/ComplaintForm';
+import StudentNavbar from '../components/StudentNavbar';
 import { ChevronLeft, Plus, Building2, Home, Loader2, RefreshCw } from 'lucide-react';
 
 const SpacePage = () => {
@@ -59,7 +60,9 @@ const SpacePage = () => {
   const Icon = isDept ? Building2 : Home;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-background">
+      <StudentNavbar />
+      <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Navigation */}
       <Link 
         to="/" 
@@ -120,6 +123,7 @@ const SpacePage = () => {
           onSuccess={handleRefresh}
         />
       )}
+      </div>
     </div>
   );
 };

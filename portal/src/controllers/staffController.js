@@ -7,8 +7,27 @@ const SLA_TIERS = {
   P2: 7 * 24 * 60 * 60 * 1000,
 };
 
+// Mocked Staff Roles (In real app, this comes from DB)
+const MOCK_STAFF = {
+  id: 'staff_001',
+  name: 'Dr. Rajesh Kumar',
+  roles: ['HOD - EE', 'Faculty - ECE', 'Warden - NBH Hostel'],
+  allowed_space_ids: [] // Will fetch these dynamically or assume all for now
+};
+
 /**
- * Get stats for staff dashboard
+ * Get Staff Profile & Roles
+ */
+exports.getStaffProfile = async (req, res, next) => {
+  try {
+    res.json({ success: true, data: MOCK_STAFF });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get stats for staff dashboard (Personalized)
  */
 exports.getStaffStats = async (req, res, next) => {
   try {
@@ -55,7 +74,6 @@ exports.getStaffComplaints = async (req, res, next) => {
     const { data, error } = await query;
     if (error) throw error;
 
-    // Attach escalation flag dynamically
     const complaintsWithSLA = data.map(c => {
       const deadline = new Date(c.created_at).getTime() + (SLA_TIERS[c.priority] || SLA_TIERS.P2);
       return {
@@ -66,6 +84,53 @@ exports.getStaffComplaints = async (req, res, next) => {
     });
 
     res.json({ success: true, data: complaintsWithSLA });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get available maintainers for a space
+ */
+exports.getMaintainers = async (req, res, next) => {
+  try {
+    const { space_id } = req.query;
+    // In real app, fetch from maintainers table. 
+    // Here we generate realistic mock data based on space
+    const mockMaintainers = [
+      { id: 'm1', name: 'Ayush Sharma', roll_suffix: '02', space_id: space_id },
+      { id: 'm2', name: 'Amit Verma', roll_suffix: '15', space_id: space_id },
+      { id: 'm3', name: 'Sagar Singh', roll_suffix: '44', space_id: space_id }
+    ];
+    res.json({ success: true, data: mockMaintainers });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Assign Maintainer to Complaint
+ */
+exports.assignMaintainer = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { maintainer_id } = req.body;
+
+    // Update complaint with maintainer and set status to assigned
+    const { data, error } = await supabase
+      .from('complaints')
+      .update({ 
+        status: 'assigned',
+        // maintainer_id would be a column here in a full schema
+        updated_at: new Date() 
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ success: true, data });
   } catch (error) {
     next(error);
   }

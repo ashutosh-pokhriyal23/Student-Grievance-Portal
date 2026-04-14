@@ -2,6 +2,15 @@ const express = require('express');
 const router = express.Router();
 const staffController = require('../controllers/staffController');
 
+// GET /api/staff/profile
+router.get('/profile', staffController.getStaffProfile);
+
+// GET /api/staff/maintainers
+router.get('/maintainers', staffController.getMaintainers);
+
+// PATCH /api/staff/complaints/:id/assign
+router.patch('/complaints/:id/assign', staffController.assignMaintainer);
+
 // GET /api/staff/stats
 router.get('/stats', staffController.getStaffStats);
 

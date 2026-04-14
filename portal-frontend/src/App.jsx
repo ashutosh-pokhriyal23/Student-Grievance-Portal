@@ -23,20 +23,6 @@ function App() {
           }}
         />
         
-        {/* Simple Navigation Bar */}
-        <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-            <a href="/" className="font-sora font-extrabold text-2xl tracking-tight text-primary">
-              <span className="text-accent-dept">Student</span> Grievance
-            </a>
-            <div className="hidden md:flex items-center space-x-6">
-              <a href="/" className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/10 hover:-translate-y-0.5 transition-all">
-                Help Desk
-              </a>
-            </div>
-          </div>
-        </nav>
-
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/space/:spaceId" element={<SpacePage />} />
