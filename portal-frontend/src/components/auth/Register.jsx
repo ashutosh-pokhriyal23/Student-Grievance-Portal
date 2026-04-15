@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ChevronDown, User, Shield, BookOpen, UploadCloud, CheckCircle2, UserCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +8,20 @@ import RightPanel from './RightPanel';
 export default function Register() {
   const [role, setRole] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  
+  // Click outside logic
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -89,13 +103,11 @@ export default function Register() {
       setVerified(true);
       setVerificationStatus(data.status); // 'verified', 'pending', etc.
       
-      // AUTO-LOGIN: If the AI verified the ID, log in and go home immediately
-      if (data.token && data.status === 'verified') {
+      // OTP REMOVED: Log in and go home immediately
+      if (data.token) {
         login(data.user, data.token);
-        setTimeout(() => navigate('/'), 2000);
-      } else {
-        setTimeout(() => navigate(`/verify-otp?email=${encodeURIComponent(email)}`), 2500);
       }
+      navigate('/'); 
 
     } catch (err) {
       timers.forEach(t => clearTimeout(t));
@@ -200,7 +212,7 @@ export default function Register() {
             </div>
 
             {/* Role Selection */}
-            <div className="space-y-1.5 relative z-20">
+            <div className="space-y-1.5 relative z-20" ref={dropdownRef}>
               <label className="text-[12px] font-bold text-gray-500 uppercase tracking-wide">
                 Select Role <span className="text-red-500">*</span>
               </label>

@@ -205,8 +205,8 @@ exports.register = async (req, res) => {
         isPending = true;
       }
 
-      // Determine final status strictly
-      verificationStatus = isPending ? 'pending' : 'verified';
+      // COMPLETELY REMOVE OTP: All users are instantly verified and logged in.
+      verificationStatus = 'verified';
 
       // Generate unique BTKIT ID with max 5 retries
       const splitName = name.replace(/[^a-zA-Z]/g, '');
@@ -246,6 +246,9 @@ exports.register = async (req, res) => {
     email = email.trim().toLowerCase();
     console.log("REGISTER HIT", { name, email, role, idCardUploaded: !!req.file });
 
+    // Generate a 6-digit OTP code for verification
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
     const { error: insertError, data: insertData } = await supabase
       .from('users')
       .insert([
@@ -255,7 +258,7 @@ exports.register = async (req, res) => {
           password: hashedPassword,
           role,
           verification_status: verificationStatus,
-          otp: null,
+          otp: generatedOtp, // Save the actual code here!
           student_unique_id: studentUniqueId,
           college_name: 'Bipin Tripathi Kumaun Institute of Technology, Dwarahat',
           year_of_validation: validYear.toString(),
@@ -267,7 +270,7 @@ exports.register = async (req, res) => {
 
     if (insertError) {
       console.error('Registration insertion error:', insertError);
-      return res.status(500).json({ error: 'Failed to create account. Verify database schema.' });
+      return res.status(500).json({ error: `Registration failed: ${insertError.message}` });
     }
 
     const insertedUser = insertData[0];
@@ -276,7 +279,7 @@ exports.register = async (req, res) => {
     // AUTO-LOGIN: If the user is automatically verified by AI, issue a token immediately
     if (verificationStatus === 'verified') {
       token = jwt.sign(
-        { userId: insertedUser.id, email: insertedUser.email, role: insertedUser.role },
+        { userId: insertedUser.id, email: insertedUser.email, role: insertedUser.role, name: insertedUser.name },
         RESOLVED_JWT_SECRET,
         { expiresIn: '24h' }
       );
@@ -285,6 +288,7 @@ exports.register = async (req, res) => {
     res.status(201).json({
       message: 'ID verified successfully and account created.',
       token,
+      otp: generatedOtp, // Adding this so you can see it in the Network tab for testing
       user: {
         id: insertedUser.id,
         name: insertedUser.name,
@@ -327,7 +331,7 @@ exports.verifyOTP = async (req, res) => {
     // IF account is already verified, we allow the request to proceed to issue a fresh token (auto-login)
     if (user.verification_status === 'verified') {
       const token = jwt.sign(
-        { userId: user.id, email: user.email, role: user.role },
+        { userId: user.id, email: user.email, role: user.role, name: user.name },
         RESOLVED_JWT_SECRET,
         { expiresIn: '24h' }
       );
@@ -360,7 +364,7 @@ exports.verifyOTP = async (req, res) => {
 
     // Generate Token for auto-login after OTP verification
     const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
+      { userId: user.id, email: user.email, role: user.role, name: user.name },
       RESOLVED_JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -431,7 +435,7 @@ exports.login = async (req, res) => {
 
     // Generate Token
     const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
+      { userId: user.id, email: user.email, role: user.role, name: user.name },
       RESOLVED_JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -457,9 +461,19 @@ exports.login = async (req, res) => {
 // Return currently authenticated user info (verified via authMiddleware)
 exports.getProfile = async (req, res) => {
   try {
-    // req.user is populated by authMiddleware after JWT validation
+    // req.user is populated by authMiddleware after JWT validation (contains userId)
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, role, student_unique_id, verification_status, college_name, year_of_validation')
+      .eq('id', req.user.userId)
+      .maybeSingle();
+
+    if (error || !user) {
+      return res.status(404).json({ error: 'User profile not found.' });
+    }
+
     res.status(200).json({
-      user: req.user
+      user
     });
   } catch (error) {
     console.error('Error fetching profile:', error);

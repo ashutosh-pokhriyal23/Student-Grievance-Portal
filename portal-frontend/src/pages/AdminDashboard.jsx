@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   getAdminOverview, 
@@ -17,11 +17,11 @@ import {
   UserCheck, 
   AlertTriangle, 
   Zap, 
-  Download,
   Calendar,
   ShieldCheck,
   LogOut,
-  UserCircle
+  UserCircle,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -33,6 +33,8 @@ const AdminDashboard = () => {
   const [performance, setPerformance] = useState({ departments: [], hostels: [] });
   const [escalations, setEscalations] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -57,18 +59,14 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [fetchData]);
-
-  const exportData = () => {
-    const csvContent = "data:text/csv;charset=utf-8,Category,Count\n" + 
-      categories.map(c => `${c.category},${c.count}`).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "college_grievances_audit.csv");
-    document.body.appendChild(link);
-    link.click();
-  };
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50/50">
@@ -78,27 +76,46 @@ const AdminDashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50/20 pb-20">
-      <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gray-50/10 pb-20">
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div>
             <h1 className="text-5xl font-black text-primary tracking-tighter leading-none mb-4">
               Admin <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600">Command Center</span>
             </h1>
-            <p className="text-lg text-secondary font-medium">Global tracking and resolution monitoring for Director / Dean.</p>
+            <p className="text-lg text-secondary font-medium uppercase tracking-tight opacity-60">Global tracking and resolution monitoring for Director / Dean.</p>
           </div>
           
           <div className="flex items-center gap-4 flex-wrap justify-end">
-             {/* Admin Identity Info */}
-             <div className="hidden lg:flex items-center gap-3 pr-4 border-r border-gray-100">
-                <div className="text-right">
-                   <p className="text-[12px] font-black text-primary leading-tight uppercase tracking-tight">{user?.name || "Admin User"}</p>
-                   <p className="text-[10px] font-bold text-secondary opacity-60 lowercase">{user?.email}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-                   <UserCircle size={20} />
-                </div>
+             {/* Big Profile Avatar on the Left (Relative to actions) */}
+             <div className="relative mr-4 pr-6 border-r border-gray-100" ref={profileRef}>
+                <button 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-4 group"
+                >
+                  <div className="text-right">
+                    <p className="text-[14px] font-black text-primary leading-tight uppercase tracking-tight">{user?.name || "ASHUTOSH POKHRIYAL"}</p>
+                    <p className="text-[11px] font-bold text-secondary opacity-60">{user?.email || "ashupokhriyal810@gmail.com"}</p>
+                  </div>
+                  <div className="h-14 w-14 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 transition-all group-hover:shadow-md active:scale-95">
+                    <UserCircle size={28} />
+                  </div>
+                </button>
+
+                {/* Dropdown Menu */}
+                {isProfileOpen && (
+                  <div className="absolute top-full right-0 mt-4 w-56 bg-white border border-gray-100 rounded-3xl shadow-2xl p-2 z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                    <button 
+                      onClick={logout}
+                      className="w-full flex items-center justify-between px-5 py-4 text-[11px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 rounded-2xl transition-all"
+                    >
+                      <span>Logout</span>
+                      <LogOut size={16} />
+                    </button>
+                  </div>
+                )}
              </div>
 
              <div className="flex items-center gap-3">
@@ -110,26 +127,9 @@ const AdminDashboard = () => {
                    <span>Space Heads</span>
                 </Link>
 
-                <button className="hidden sm:flex items-center space-x-2 px-6 py-4 bg-white border border-gray-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-secondary hover:text-primary transition-all shadow-sm">
+                <button className="flex items-center space-x-2 px-6 py-4 bg-white border border-gray-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-secondary hover:text-primary transition-all shadow-sm">
                    <Calendar size={14} />
                    <span>Last 30 Days</span>
-                </button>
-
-                <button 
-                   onClick={exportData}
-                   className="flex items-center space-x-2 px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-xl hover:scale-105 transition-all"
-                >
-                   <Download size={14} />
-                   <span>Export Audit</span>
-                </button>
-                
-                {/* Logout Action */}
-                <button 
-                   onClick={logout}
-                   className="flex items-center justify-center h-12 w-12 bg-red-50 text-red-500 rounded-2xl border border-red-100/50 hover:bg-red-500 hover:text-white transition-all shadow-sm shadow-red-500/10 active:scale-95"
-                   title="Logout from Command Center"
-                >
-                   <LogOut size={18} />
                 </button>
              </div>
           </div>
@@ -183,7 +183,6 @@ const AdminDashboard = () => {
         {/* Secondary Row: Trends & Escalations */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-16">
           <div className="lg:col-span-2">
-            {/* Simple Trends (CSS Bar Chart) */}
             <div className="bg-white p-8 rounded-[32px] shadow-soft border border-gray-100">
                <h3 className="text-2xl font-black text-primary mb-8 tracking-tighter">Recent Trends</h3>
                <div className="flex items-end justify-between h-48 gap-2">
@@ -207,44 +206,10 @@ const AdminDashboard = () => {
                    </div>
                  ))}
                </div>
-               <div className="flex items-center space-x-6 mt-8 pt-6 border-t border-gray-50">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-indigo-100 rounded-sm" />
-                    <span className="text-[10px] font-black uppercase text-secondary tracking-widest">New Issues</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-200 rounded-sm" />
-                    <span className="text-[10px] font-black uppercase text-secondary tracking-widest">Resolved</span>
-                  </div>
-               </div>
             </div>
           </div>
           <div className="lg:col-span-1">
             <EscalationPanel escalations={escalations} />
-            
-            {/* Top Categories */}
-            <div className="mt-10 bg-white p-8 rounded-[32px] shadow-soft border border-gray-100">
-               <h3 className="text-xl font-black text-primary mb-6 tracking-tight">Top Recurring Issues</h3>
-               <div className="space-y-4">
-                 {categories.slice(0, 5).map((cat, i) => (
-                   <div key={i}>
-                      <div className="flex justify-between items-end mb-2">
-                         <span className="text-xs font-black uppercase tracking-widest text-secondary">{cat.category}</span>
-                         <span className="text-sm font-black text-primary">{cat.count} Issues</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-gray-50 rounded-full overflow-hidden">
-                         <div 
-                           className="h-full bg-primary" 
-                           style={{ width: `${(cat.count / categories[0].count) * 100}%` }} 
-                         />
-                      </div>
-                      <p className="text-[10px] font-medium text-secondary/60 mt-1 uppercase tracking-tight">
-                        Mainly in: <span className="font-bold text-primary">{cat.top_space}</span>
-                      </p>
-                   </div>
-                 ))}
-               </div>
-            </div>
           </div>
         </div>
       </div>

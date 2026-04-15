@@ -12,7 +12,7 @@ exports.getComplaintsBySpace = async (req, res, next) => {
 
     let query = supabase
       .from('complaints')
-      .select('*')
+      .select('*') // Simple select to avoid relationship errors
       .order('created_at', { ascending: false });
 
     if (space_id) {
@@ -47,7 +47,8 @@ exports.createComplaint = async (req, res, next) => {
       student_email,
       image_url,
       submitted_by,
-      email
+      email,
+      user_id
     } = req.body;
 
     const { data, error } = await supabase
@@ -55,6 +56,7 @@ exports.createComplaint = async (req, res, next) => {
       .insert([
         { 
           space_id, 
+          user_id, // Store the ID for dynamic lookups
           title, 
           description, 
           category, 

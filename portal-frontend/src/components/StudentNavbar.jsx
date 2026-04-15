@@ -1,13 +1,33 @@
-import React from 'react';
-import { HelpCircle, User, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { User, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const StudentNavbar = () => {
   const { user, logout } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   
-  const initials = user?.name
-    ? user.name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase()
-    : (user?.email?.substring(0, 2).toUpperCase() || 'ST');
+  const initials = (user?.name || user?.email || 'User')
+    .split(/[@\s]/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(p => p[0])
+    .join('')
+    .toUpperCase();
+
+  // Robust click-outside logic
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
@@ -28,31 +48,53 @@ const StudentNavbar = () => {
         
         <div className="flex items-center space-x-3 md:space-x-8">
           {user && (
-            <div className="hidden sm:flex items-center space-x-3 pr-4 border-r border-gray-100">
-              <div className="text-right">
-                <p className="text-sm font-black text-gray-900 leading-tight">{user.name || 'Student User'}</p>
-                <p className="text-[10px] font-bold text-gray-400 truncate max-w-[150px]">{user.email}</p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm transition-transform hover:scale-105">
-                <span className="text-xs font-black tracking-tighter">{initials}</span>
-              </div>
+            <div className="relative" ref={dropdownRef}>
+              <button 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center space-x-4 p-1.5 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 active:scale-95 group"
+              >
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-black text-gray-900 leading-tight">
+                    {user.name || 'Student User'}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm transition-transform group-hover:scale-105">
+                  <span className="text-sm font-black tracking-tighter">{initials}</span>
+                </div>
+                <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute right-0 mt-2 w-60 bg-white rounded-[24px] shadow-2xl shadow-primary/20 border border-gray-100 p-1.5 z-50 overflow-hidden"
+                    >
+                      <div className="px-4 py-3 bg-gray-50/50 rounded-[20px] mb-1">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Account</p>
+                        <p className="text-[12px] font-black text-gray-900 truncate">{user.email}</p>
+                      </div>
+                    
+                      <button
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          logout();
+                        }}
+                        className="w-full px-4 py-2.5 hover:bg-red-50 text-gray-700 hover:text-red-600 transition-all flex items-center gap-3 rounded-[18px] group"
+                      >
+                        <div className="w-8 h-8 rounded-xl bg-gray-100 group-hover:bg-red-100 flex items-center justify-center transition-colors">
+                          <LogOut size={14} className="group-hover:scale-110 transition-transform" />
+                        </div>
+                        <span className="text-[13px] font-bold">Logout</span>
+                      </button>
+                    </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
-
-          <div className="flex items-center space-x-3 md:space-x-4">
-            <a href="/" className="group flex items-center space-x-2 bg-primary text-white px-4 md:px-6 py-3 rounded-2xl text-[12px] md:text-sm font-black uppercase tracking-widest shadow-xl shadow-primary/10 hover:-translate-y-1 transition-all">
-              <HelpCircle size={18} />
-              <span className="hidden xs:inline">Help Desk</span>
-            </a>
-            
-            <button 
-              onClick={logout}
-              className="flex items-center justify-center bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 h-11 w-11 md:h-12 md:w-12 rounded-2xl transition-all border border-gray-100 hover:border-red-100 active:scale-95 shadow-sm"
-              title="Logout"
-            >
-              <LogOut size={20} />
-            </button>
-          </div>
         </div>
       </div>
     </nav>

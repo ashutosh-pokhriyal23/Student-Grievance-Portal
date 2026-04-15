@@ -58,7 +58,7 @@ const ComplaintCard = ({ complaint, onUpvoteUpdate }) => {
           </div>
           <div className="flex items-center space-x-1">
             <User size={14} />
-            <span>{complaint.is_anonymous ? 'Anonymous' : (complaint.student_name || 'Uknown')}</span>
+            <span>{complaint.is_anonymous ? 'Anonymous' : (complaint.student_name || complaint.user_name || complaint.submitted_by || 'Verified')}</span>
           </div>
         </div>
         

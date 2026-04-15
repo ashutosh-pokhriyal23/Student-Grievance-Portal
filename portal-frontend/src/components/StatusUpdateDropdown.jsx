@@ -10,10 +10,11 @@ const StatusUpdateDropdown = ({ complaintId, currentStatus, onUpdate }) => {
   const [pendingStatus, setPendingStatus] = useState(null);
   const [comment, setComment] = useState('');
   const [statuses, setStatuses] = useState([
-    { id: 'in_progress', label: 'In Progress', color: 'bg-blue-50 text-blue-700' },
-    { id: 'on_hold', label: 'On Hold', color: 'bg-indigo-50 text-indigo-700' },
-    { id: 'resolved', label: 'Resolved', color: 'bg-emerald-50 text-emerald-700' },
-    { id: 'closed', label: 'Closed', color: 'bg-slate-50 text-slate-700' },
+    { id: 'created', label: 'New', color: 'bg-sky-600 text-white' },
+    { id: 'in_progress', label: 'In Progress', color: 'bg-indigo-600 text-white' },
+    { id: 'on_hold', label: 'On Hold', color: 'bg-amber-500 text-white' },
+    { id: 'resolved', label: 'Resolved', color: 'bg-emerald-600 text-white' },
+    { id: 'closed', label: 'Closed', color: 'bg-purple-600 text-white' },
   ]);
   const dropdownRef = useRef(null);
 
@@ -79,6 +80,16 @@ const StatusUpdateDropdown = ({ complaintId, currentStatus, onUpdate }) => {
 
   const currentLabel = statuses.find(s => s.id === currentStatus || s.id.toLowerCase() === String(currentStatus || '').toLowerCase())?.label || currentStatus?.replace('_', ' ');
 
+  const getStatusButtonStyles = (status) => {
+    const s = status?.toLowerCase();
+    if (s === 'closed') return 'bg-purple-600 text-white border-transparent hover:bg-purple-700';
+    if (s === 'resolved') return 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700';
+    if (s === 'on_hold') return 'bg-amber-500 text-white border-transparent hover:bg-amber-600';
+    if (s === 'in_progress' || s === 'assigned') return 'bg-indigo-600 text-white border-transparent hover:bg-indigo-700';
+    if (s === 'created') return 'bg-sky-600 text-white border-transparent hover:bg-sky-700';
+    return 'bg-white border border-gray-100 text-primary hover:bg-gray-50';
+  };
+
   return (
     <div className="relative" onClick={(e) => e.stopPropagation()} ref={dropdownRef}>
       {/* Dropdown Toggle */}
@@ -86,7 +97,7 @@ const StatusUpdateDropdown = ({ complaintId, currentStatus, onUpdate }) => {
         type="button"
         onClick={() => { setIsOpen(!isOpen); setIsConfirming(false); }}
         disabled={loading}
-        className="relative min-w-[140px] flex items-center justify-between bg-white border border-gray-100 px-5 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest text-primary hover:bg-gray-50 transition-all shadow-sm active:scale-95 disabled:pointer-events-none"
+        className={`relative min-w-[140px] flex items-center justify-between px-5 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 disabled:pointer-events-none ${getStatusButtonStyles(currentStatus)}`}
       >
         <div className={`flex items-center justify-between w-full transition-opacity duration-200 ${loading ? 'opacity-0' : 'opacity-100'}`}>
           <span className="truncate pr-2 capitalize">{currentLabel}</span>
@@ -102,17 +113,17 @@ const StatusUpdateDropdown = ({ complaintId, currentStatus, onUpdate }) => {
 
       {/* Status List Dropdown */}
       {isOpen && !isConfirming && (
-        <div className="absolute top-full mt-3 left-0 w-64 bg-white border border-gray-100 rounded-[32px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] p-2.5 z-[60] animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="space-y-1">
-            <p className="text-[9px] font-black text-secondary/30 uppercase tracking-[0.25em] py-3 px-4">Change Status</p>
+        <div className="absolute top-full mt-3 left-0 w-64 bg-white border border-gray-100 rounded-[30px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.18)] p-2 z-[60] animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="space-y-1 bg-gradient-to-br from-white to-gray-50/50 rounded-[24px] p-1">
+            <p className="text-[10px] font-black text-gray-900/40 uppercase tracking-[0.25em] py-3 px-4">Update Status</p>
             {statuses.map((s) => (
               <button
                 key={s.id}
                 onClick={() => handleSelectStatus(s.id)}
-                className={`w-full text-left px-5 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
+                className={`w-full text-left px-5 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] transition-all ${
                   currentStatus === s.id 
-                    ? `${s.color} border border-current/10 opacity-40 cursor-not-allowed` 
-                    : 'text-secondary hover:bg-gray-50 hover:text-primary active:scale-95'
+                    ? `${s.color} border border-current/10 opacity-30 cursor-not-allowed` 
+                    : 'text-gray-900 hover:bg-white hover:shadow-md hover:scale-[1.02] active:scale-95'
                 }`}
               >
                 {s.label}
@@ -124,15 +135,15 @@ const StatusUpdateDropdown = ({ complaintId, currentStatus, onUpdate }) => {
 
       {/* Confirmation Modal Overlay */}
       {isConfirming && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-           {/* Backdrop */}
+        <div className="fixed inset-0 z-[10] flex items-center justify-center p-4 pt-44">
+           {/* Simple Overlay */}
            <div 
-             className="absolute inset-0 bg-black/50 animate-in fade-in duration-300 cursor-default" 
+             className="absolute inset-0 bg-black/30 transition-opacity duration-200" 
              onClick={(e) => { e.stopPropagation(); setIsConfirming(false); setIsOpen(false); }}
            />
            
            {/* Modal Body */}
-           <div className="relative w-full max-w-md bg-white rounded-[48px] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] p-10 z-10 animate-in zoom-in-95 fade-in duration-300">
+           <div className="relative w-full max-w-md bg-white rounded-[40px] shadow-2xl p-10 z-10 transition-transform duration-200 border border-gray-100/50">
               <div className="space-y-8">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1.5">

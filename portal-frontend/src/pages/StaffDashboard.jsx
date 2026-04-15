@@ -172,7 +172,7 @@ const StaffDashboard = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-2/3">
               <select name="space_id" value={filters.space_id} onChange={handleFilterChange} className="w-full px-6 py-4 bg-gray-50/50 border-none rounded-2xl text-xs font-black uppercase tracking-widest outline-none appearance-none hover:bg-gray-100/50 cursor-pointer">
-                <option value="">Space: All Units</option>
+                <option value="">Space: All</option>
                 {spaces.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
               <select name="status" value={filters.status} onChange={handleFilterChange} className="w-full px-6 py-4 bg-gray-50/50 border-none rounded-2xl text-xs font-black uppercase tracking-widest outline-none appearance-none hover:bg-gray-100/50 cursor-pointer">

@@ -337,7 +337,7 @@ const MaintainerAssignmentModal = ({
                 <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-2">
                   <Info size={14} className="text-red-400" />
                   <p className="text-[10px] font-black text-red-600 uppercase tracking-widest leading-none">
-                    No units found in {selectedCategoryId}
+                    No spaces found in {selectedCategoryId}
                   </p>
                 </div>
               )}

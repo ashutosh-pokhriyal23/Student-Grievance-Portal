@@ -3,6 +3,7 @@ import { EyeOff, Loader2, User, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { createComplaint } from '../api/complaints';
+import { useAuth } from '../context/AuthContext';
 
 const buildFilePath = (file) => {
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
@@ -33,6 +34,7 @@ const uploadImage = async (file) => {
 };
 
 const AnonymousConfirm = ({ isOpen, formData, spaceId, onSuccess, onBack, onClose, onUploadStateChange }) => {
+  const { user } = useAuth();
   const [isRendered, setIsRendered] = useState(isOpen);
   const [isVisible, setIsVisible] = useState(isOpen);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,12 +94,13 @@ const AnonymousConfirm = ({ isOpen, formData, spaceId, onSuccess, onBack, onClos
 
       const complaintData = {
         space_id: spaceId,
+        user_id: user?.id, // Link to the user registration table
         title: formData.title,
         description: formData.description,
         category: formData.category,
         is_anonymous: isAnonymous,
-        student_name: isAnonymous ? null : formData.name || null,
-        student_email: isAnonymous ? null : formData.email || null,
+        student_name: isAnonymous ? null : (user?.name || formData.name || null),
+        student_email: isAnonymous ? null : (user?.email || formData.email || null),
         image_url: imageUrl,
       };
 

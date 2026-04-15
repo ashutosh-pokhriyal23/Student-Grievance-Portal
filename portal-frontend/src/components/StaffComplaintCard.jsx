@@ -1,102 +1,116 @@
 import React from 'react';
-import { Clock, User, Shield, MapPin, Users } from 'lucide-react';
+import { Clock, User, Shield, MapPin, ChevronRight, Zap } from 'lucide-react';
 import DeadlineIndicator from './DeadlineIndicator';
 import StatusUpdateDropdown from './StatusUpdateDropdown';
 
 const StaffComplaintCard = ({ complaint, onUpdate, onAssignClick, onClick }) => {
-  const getPriorityColor = (priority) => {
+  const getGradientColor = (priority) => {
     switch (priority) {
-      case 'P0': return 'bg-red-500 text-white ring-4 ring-red-500/10';
-      case 'P1': return 'bg-amber-500 text-white ring-4 ring-amber-500/10';
-      case 'P2': return 'bg-emerald-500 text-white ring-4 ring-emerald-500/10';
-      default: return 'bg-gray-400 text-white';
+      case 'P0': return 'from-[#ff0055] via-[#ff4d00] to-[#ff9500]'; // Neon Red-Gold
+      case 'P1': return 'from-[#7000ff] via-[#b300ff] to-[#ff00d4]'; // Cyber Purple-Pink
+      case 'P2': return 'from-[#00f2fe] via-[#4facfe] to-[#00f2fe]'; // Electric Blue-Cyan
+      default: return 'from-slate-600 to-gray-400';
+    }
+  };
+
+  const getLightColor = (priority) => {
+    switch (priority) {
+      case 'P0': return 'bg-red-50 text-red-700 border-red-100';
+      case 'P1': return 'bg-amber-50 text-amber-700 border-amber-100';
+      case 'P2': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+      default: return 'bg-gray-50 text-gray-700 border-gray-100';
     }
   };
 
   return (
     <div 
       onClick={onClick}
-      className={`group relative bg-white rounded-[40px] p-8 border transition-all duration-700 cursor-pointer ${
-      complaint.is_escalated 
-        ? 'border-red-200 shadow-[0_20px_60px_rgba(239,68,68,0.1)] scale-[1.02]' 
-        : 'border-transparent shadow-[0_15px_45px_rgba(0,0,0,0.02)] hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] hover:-translate-y-3'
-    }`}>
-      {/* Visual Intensity Glow */}
-      <div className={`absolute inset-0 rounded-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 -z-10 bg-gradient-to-br ${
-        complaint.priority === 'P0' ? 'from-red-50/50 to-transparent' : 'from-indigo-50/30 to-transparent'
-      }`} />
+      className={`group relative bg-white rounded-[40px] p-7 border border-gray-100 transition-all duration-500 hover:shadow-[0_45px_90px_-20px_rgba(0,0,0,0.12)] hover:-translate-y-2 cursor-pointer ${
+        complaint.is_escalated ? 'ring-2 ring-red-400 ring-offset-2' : ''
+      }`}
+    >
+      {/* Dynamic Header Gradient Bar */}
+      <div className={`absolute top-0 left-0 w-full h-[12px] bg-gradient-to-r ${getGradientColor(complaint.priority)} opacity-100 shadow-[0_2px_15px_rgba(0,0,0,0.1)] rounded-t-[40px]`} />
+      
+      {/* Subtle Background Mesh Glow */}
+      <div className={`absolute -bottom-20 -right-20 w-64 h-64 blur-[100px] opacity-0 group-hover:opacity-[0.1] transition-opacity duration-1000 rounded-full bg-gradient-to-br ${getGradientColor(complaint.priority)}`} />
 
-      {/* Top Header */}
-      <div className="flex justify-between items-start mb-10">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center space-x-2">
-            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest shadow-lg ${getPriorityColor(complaint.priority)}`}>
+      {/* Header Row */}
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${getLightColor(complaint.priority)} shadow-sm`}>
               {complaint.priority}
             </span>
-            <span className="text-[10px] font-black text-secondary/60 uppercase tracking-widest bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-xl">
-              {complaint.category}
+            <span className="text-[9px] font-black text-gray-900 uppercase tracking-[0.2em] bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">
+              {complaint.category || 'General'}
             </span>
           </div>
-          <div className="flex items-center text-[11px] font-black text-secondary/40 uppercase tracking-[0.2em] leading-none">
-             <MapPin size={12} className="mr-1.5 text-primary/20" />
-             {complaint.space?.name}
+          <div className="flex items-center text-[10px] font-black text-gray-700 uppercase tracking-[0.1em] mt-1">
+             <MapPin size={10} className="mr-1.5 text-gray-900" />
+             {complaint.space?.name || 'Main Campus'}
           </div>
         </div>
-        <DeadlineIndicator deadline={complaint.deadline} isEscalated={complaint.is_escalated} />
+        
+        {complaint.status !== 'resolved' && complaint.status !== 'closed' && (
+          <DeadlineIndicator deadline={complaint.deadline} isEscalated={complaint.is_escalated} />
+        )}
       </div>
 
       {/* Title & Body */}
-      <div className="mb-10">
-        <h3 className="text-2xl font-black text-primary mb-3 leading-tight tracking-tight group-hover:text-primary transition-colors">
+      <div className="mb-8">
+        <h3 className="text-[20px] font-black text-gray-900 mb-3 leading-tight tracking-tight group-hover:text-blue-600 transition-colors duration-300">
           {complaint.title}
         </h3>
-        <p className="text-sm text-secondary/60 line-clamp-3 leading-relaxed font-medium">
+        <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed font-medium">
           {complaint.description}
         </p>
       </div>
 
-      {/* Management Row */}
-      <div className="flex flex-wrap items-center gap-3 mb-10" onClick={(e) => e.stopPropagation()}>
-        <button 
-          onClick={onAssignClick}
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3.5 text-[10px] font-black uppercase tracking-[0.22em] text-white transition-all shadow-[0_16px_35px_-15px_rgba(26,26,46,0.55)] border border-primary/10 hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-15px_rgba(26,26,46,0.65)] active:translate-y-0"
-        >
-          <Users size={14} />
-          <span>Assign Maintainer</span>
-        </button>
-        <StatusUpdateDropdown 
-           complaintId={complaint.id} 
-           currentStatus={complaint.status} 
-           onUpdate={onUpdate} 
-        />
+      {/* Inline Management Row */}
+      <div className="flex items-center justify-between gap-4 mb-8" onClick={(e) => e.stopPropagation()}>
+        <div className="flex -space-x-2">
+          {/* Visual Avatar Placeholder */}
+          <div className="w-8 h-8 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[10px] font-black text-blue-600 shadow-sm">
+            <Zap size={14} fill="currentColor" />
+          </div>
+          <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400">
+            ?
+          </div>
+        </div>
+
+        <div className="flex-1">
+          <StatusUpdateDropdown 
+            complaintId={complaint.id} 
+            currentStatus={complaint.status} 
+            onUpdate={onUpdate} 
+          />
+        </div>
       </div>
 
       {/* Footer Meta */}
-      <div className="pt-8 border-t border-gray-50 flex items-center justify-between">
-        <div className="flex items-center space-x-6">
-          <div className="flex flex-col gap-1.5 min-w-[100px]">
-            <div className="flex items-center space-x-2 group/meta">
-              <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover/meta:bg-white transition-colors shadow-sm">
-                 <Clock size={14} className="text-secondary/40" />
-              </div>
-              <span className="text-[10px] font-black text-secondary/40 uppercase tracking-widest leading-none">
-                {new Date(complaint.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-              </span>
+      <div className="flex items-center justify-between pt-5 border-t border-gray-50/80">
+        <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2.5 group/meta">
+            <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover/meta:border-blue-200 transition-all shadow-sm">
+               {complaint.is_anonymous ? <Shield size={14} className="text-gray-900/40" /> : <User size={14} className="text-gray-900/40" />}
             </div>
-            <div className="text-[9px] font-black text-secondary/30 uppercase tracking-[0.15em] pl-10">
-              {new Date(complaint.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
-            </div>
+            <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">
+              {complaint.is_anonymous ? 'Anonymous' : (complaint.student_name || 'Verified')}
+            </span>
           </div>
-          <div className="flex items-center space-x-2 group/meta">
-            <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover/meta:bg-white transition-colors shadow-sm">
-               {complaint.is_anonymous ? <Shield size={16} className="text-secondary/40" /> : <User size={16} className="text-secondary/40" />}
-            </div>
-            <span className="text-[10px] font-black text-secondary/40 uppercase tracking-widest leading-none truncate max-w-[80px]">
-              {complaint.is_anonymous ? 'Guest' : (complaint.student_name || 'Verified')}
+          
+          <div className="flex items-center gap-2 pr-2">
+            <Clock size={12} className="text-gray-900/20" />
+            <span className="text-[10px] font-black text-gray-900/40 uppercase tracking-widest">
+              {new Date(complaint.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
             </span>
           </div>
         </div>
-        <div className="w-4 h-4 bg-gray-50 rounded-full border border-gray-100" />
+
+        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-sm">
+           <ChevronRight size={16} strokeWidth={3} />
+        </div>
       </div>
     </div>
   );

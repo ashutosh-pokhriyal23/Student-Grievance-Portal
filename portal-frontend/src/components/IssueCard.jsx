@@ -121,18 +121,19 @@ const IssueCard = ({ issue, onCardClick, staggerIndex = 0 }) => {
           {truncatedDescription}
         </p>
 
-        {/* Footer: Time, Author */}
-        <div className="flex items-center justify-between text-[10px] text-secondary/60 font-bold uppercase tracking-wider">
-          <div className="flex items-center gap-4">
+        {/* Footer: Author, Time, Date */}
+        <div className="flex items-center text-[10px] text-secondary/60 font-bold uppercase tracking-wider">
+          <div className="flex items-center gap-2">
+            <span>
+              {issue.is_anonymous ? 'Anonymous' : (issue.student_name || issue.user_name || issue.user?.name || issue.submitted_by || 'Verified')}
+            </span>
+            <span className="opacity-40">•</span>
             <div className="flex items-center gap-1">
               <Clock size={12} className="opacity-40" />
               <span>{formatTime(issue.created_at)}</span>
-              <span className="mx-1">•</span>
-              <span>{formatDate(issue.created_at)}</span>
             </div>
-            <span>
-              by {issue.is_anonymous ? 'Anonymous' : issue.submitted_by || issue.student_name || 'Verified'}
-            </span>
+            <span className="opacity-40">•</span>
+            <span>{formatDate(issue.created_at)}</span>
           </div>
         </div>
       </div>

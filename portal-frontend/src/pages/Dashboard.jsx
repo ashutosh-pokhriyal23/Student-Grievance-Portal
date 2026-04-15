@@ -227,12 +227,6 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h2 className="text-4xl font-black text-primary tracking-tight leading-none">{cat.label}</h2>
-                  <div className="flex items-center mt-2 space-x-2">
-                    <span className={`w-1.5 h-1.5 rounded-full ${cat.bg.replace('/10', '')} animate-pulse`} />
-                    <p className="text-xs font-black text-secondary uppercase tracking-[0.2em] opacity-50">
-                      {items.length} Tracking {items.length === 1 ? 'Unit' : 'Units'}
-                    </p>
-                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
@@ -258,7 +252,7 @@ const Dashboard = () => {
              </div>
              <h3 className="text-2xl font-black text-primary tracking-tight">No results found</h3>
              <p className="text-secondary font-bold mt-2 max-w-sm mx-auto leading-relaxed">
-               We couldn't find any unit matching "{searchQuery}". Try a different branch, hostel, or category.
+               We couldn't find any space matching "{searchQuery}". Try a different branch, hostel, or category.
              </p>
              <button 
                 onClick={() => { setSearchQuery(''); setActiveFilter('all'); }}
