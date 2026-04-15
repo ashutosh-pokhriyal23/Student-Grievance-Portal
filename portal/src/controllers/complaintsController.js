@@ -1,6 +1,6 @@
 const supabase = require('../config/supabase');
 const { calculatePriority } = require('../utils/priority');
-
+const {checkDuplicateAI}=require("../ai/aiService")
 /**
  * Get all complaints for a specific space
  */
