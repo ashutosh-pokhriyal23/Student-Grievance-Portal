@@ -1,6 +1,6 @@
 const supabase = require('../config/supabase');
 const { calculatePriority } = require('../utils/priority');
-
+const {checkDuplicateAI}=require("../ai/aiService")
 /**
  * Get all complaints for a specific space
  */
@@ -41,7 +41,10 @@ exports.createComplaint = async (req, res, next) => {
       category, 
       is_anonymous, 
       student_name, 
-      student_email 
+      student_email,
+      image_url,
+      submitted_by,
+      email
     } = req.body;
 
     const { data, error } = await supabase
@@ -53,8 +56,9 @@ exports.createComplaint = async (req, res, next) => {
           description, 
           category, 
           is_anonymous, 
-          student_name: is_anonymous ? null : student_name, 
-          student_email: is_anonymous ? null : student_email,
+          student_name: is_anonymous ? null : (student_name || submitted_by || null), 
+          student_email: is_anonymous ? null : (student_email || email || null),
+          image_url: image_url || null,
           status: 'created',
           priority: 'P2',
           upvotes: 0
