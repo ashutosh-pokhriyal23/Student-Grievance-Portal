@@ -5,6 +5,7 @@ import StatsCard from '../components/StatsCard';
 import StaffComplaintCard from '../components/StaffComplaintCard';
 import StaffNavbar from '../components/StaffNavbar';
 import MaintainerAssignmentModal from '../components/MaintainerAssignmentModal';
+import IssueDetailModal from '../components/IssueDetailModal';
 import { 
   BarChart3, 
   Clock, 
@@ -29,8 +30,9 @@ const StaffDashboard = () => {
   const [spaces, setSpaces] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Selection for Assignment
+  // Selection States
   const [assigningComplaint, setAssigningComplaint] = useState(null);
+  const [selectedIssue, setSelectedIssue] = useState(null);
 
   const [filters, setFilters] = useState({
     space_id: '',
@@ -38,6 +40,14 @@ const StaffDashboard = () => {
     priority: '',
     search: '',
   });
+
+  // Sync selectedIssue with updated data when complaints array changes
+  useEffect(() => {
+    if (selectedIssue) {
+      const updated = complaints.find(c => c.id === selectedIssue.id);
+      if (updated) setSelectedIssue(updated);
+    }
+  }, [complaints, selectedIssue?.id]);
 
   const openAssignmentModal = (complaint = null) => {
     setAssigningComplaint(
@@ -192,6 +202,7 @@ const StaffDashboard = () => {
                    complaint={c} 
                    onUpdate={fetchData} 
                    onAssignClick={() => openAssignmentModal(c)}
+                   onClick={() => setSelectedIssue(c)}
                  />
                ))}
              </div>
@@ -215,6 +226,12 @@ const StaffDashboard = () => {
         profile={profile}
         spaces={spaces}
         onAssigned={fetchData}
+      />
+
+      <IssueDetailModal 
+        issue={selectedIssue}
+        isOpen={!!selectedIssue}
+        onClose={() => setSelectedIssue(null)}
       />
     </div>
   );

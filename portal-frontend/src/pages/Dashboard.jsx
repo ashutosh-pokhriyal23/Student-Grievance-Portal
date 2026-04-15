@@ -18,29 +18,29 @@ import {
 
 const Dashboard = () => {
   const MOCK_SPACES = useMemo(() => [
-    { id: 'd1', name: 'ASD (APPLIED SCIENCE DEPARTMENT)', type: 'department', open_complaints: 6 },
-    { id: 'd2', name: 'CSE', type: 'department', open_complaints: 12 },
-    { id: 'd3', name: 'ECE', type: 'department', open_complaints: 5 },
-    { id: 'd4', name: 'EE', type: 'department', open_complaints: 8 },
-    { id: 'd5', name: 'CIVIL', type: 'department', open_complaints: 9 },
-    { id: 'd6', name: 'MECHANICAL', type: 'department', open_complaints: 4 },
-    { id: 'd7', name: 'CHEMICAL', type: 'department', open_complaints: 2 },
-    { id: 'd8', name: 'BIOTECHNOLOGY', type: 'department', open_complaints: 3 },
-    { id: 'f1', name: 'Library', type: 'facility', open_complaints: 4 },
-    { id: 'f2', name: 'Competency Building Centre', type: 'facility', open_complaints: 1 },
-    { id: 'c1', name: 'Training and Placement Cell', type: 'career', open_complaints: 2 },
-    { id: 'a1', name: 'Administration Block', type: 'administrative', open_complaints: 3 },
-    { id: 'h1', name: 'GOMUKH', type: 'hostel', open_complaints: 15 },
-    { id: 'h2', name: 'NANDA DEVI HOSTEL (NDH)', type: 'hostel', open_complaints: 4 },
-    { id: 'h3', name: 'ARAWALI', type: 'hostel', open_complaints: 7 },
-    { id: 'h4', name: 'KAILASH', type: 'hostel', open_complaints: 20 },
-    { id: 'h5', name: 'NEW BOYS HOSTEL (NBH)', type: 'hostel', open_complaints: 11 },
-    { id: 'h6', name: 'Vindhyachal', type: 'hostel', open_complaints: 9 },
-    { id: 'h7', name: 'YAMUNOTRI', type: 'hostel', open_complaints: 5 },
-    { id: 'h8', name: 'GANGOTRI', type: 'hostel', open_complaints: 13 },
-    { id: 's1', name: 'Sports Dept', type: 'sports', open_complaints: 2 },
-    { id: 's2', name: 'Gym', type: 'sports', open_complaints: 6 },
-    { id: 'e1', name: 'Multipurpose Theatre', type: 'cultural', open_complaints: 1 },
+    { id: 'd1', name: 'ASD (APPLIED SCIENCE DEPARTMENT)', type: 'department', open_complaints: 0 },
+    { id: 'd2', name: 'CSE', type: 'department', open_complaints: 0 },
+    { id: 'd3', name: 'ECE', type: 'department', open_complaints: 0 },
+    { id: 'd4', name: 'EE', type: 'department', open_complaints: 0 },
+    { id: 'd5', name: 'CIVIL', type: 'department', open_complaints: 0 },
+    { id: 'd6', name: 'MECHANICAL', type: 'department', open_complaints: 0 },
+    { id: 'd7', name: 'CHEMICAL', type: 'department', open_complaints: 0 },
+    { id: 'd8', name: 'BIOTECHNOLOGY', type: 'department', open_complaints: 0 },
+    { id: 'f1', name: 'Library', type: 'facility', open_complaints: 0 },
+    { id: 'f2', name: 'Competency Building Centre', type: 'facility', open_complaints: 0 },
+    { id: 'c1', name: 'Training and Placement Cell', type: 'career', open_complaints: 0 },
+    { id: 'a1', name: 'Administration Block', type: 'administrative', open_complaints: 0 },
+    { id: 'h1', name: 'GOMUKH', type: 'hostel', open_complaints: 0 },
+    { id: 'h2', name: 'NANDA DEVI HOSTEL (NDH)', type: 'hostel', open_complaints: 0 },
+    { id: 'h3', name: 'ARAWALI', type: 'hostel', open_complaints: 0 },
+    { id: 'h4', name: 'KAILASH', type: 'hostel', open_complaints: 0 },
+    { id: 'h5', name: 'NEW BOYS HOSTEL (NBH)', type: 'hostel', open_complaints: 0 },
+    { id: 'h6', name: 'Vindhyachal', type: 'hostel', open_complaints: 0 },
+    { id: 'h7', name: 'YAMUNOTRI', type: 'hostel', open_complaints: 0 },
+    { id: 'h8', name: 'GANGOTRI', type: 'hostel', open_complaints: 0 },
+    { id: 's1', name: 'Sports Dept', type: 'sports', open_complaints: 0 },
+    { id: 's2', name: 'Gym', type: 'sports', open_complaints: 0 },
+    { id: 'e1', name: 'Multipurpose Theatre', type: 'cultural', open_complaints: 0 },
   ], []);
 
   const [spaces, setSpaces] = useState(MOCK_SPACES);
@@ -104,9 +104,16 @@ const Dashboard = () => {
 
   const fetchSpaces = useCallback(async () => {
     try {
-      // getSpaces() already returns response.data — don't destructure again
-      const data = await getSpaces();
-      setSpaces(Array.isArray(data) && data.length > 0 ? data : MOCK_SPACES);
+      const response = await getSpaces();
+      // API returns { success: true, data: [...] }
+      const spaceData = response.data || response; 
+      const finalSpaces = Array.isArray(spaceData) ? spaceData : (Array.isArray(response) ? response : []);
+      
+      if (finalSpaces.length > 0) {
+        setSpaces(finalSpaces);
+      } else {
+        setSpaces(MOCK_SPACES);
+      }
     } catch (err) {
       console.error('[Dashboard] Failed to load spaces:', err.message);
       setSpaces(MOCK_SPACES);

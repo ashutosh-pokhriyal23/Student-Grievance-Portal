@@ -12,9 +12,19 @@ const StudentNavbar = () => {
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-        <a href="/" className="font-sora font-extrabold text-2xl tracking-tight text-primary">
-          <span className="text-accent-dept">Student</span> Grievance
-        </a>
+        <div className="flex items-center space-x-8">
+          <a href="/" className="font-sora font-extrabold text-2xl tracking-tight text-primary">
+            <span className="text-accent-dept">Student</span> Grievance
+          </a>
+          {user?.role?.toLowerCase() === 'admin' && (
+            <a 
+              href="/admin" 
+              className="text-[10px] font-black uppercase tracking-widest text-secondary/40 hover:text-primary transition-colors border-l border-gray-100 pl-8 hidden md:block"
+            >
+              Admin Panel
+            </a>
+          )}
+        </div>
         
         <div className="flex items-center space-x-3 md:space-x-8">
           {user && (

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ThumbsUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { upvoteComplaint } from '../api/complaints';
+import React from 'react';
+import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CATEGORY_COLORS = {
@@ -44,7 +43,7 @@ const normalizeStatus = (value) => {
   const lower = String(value || '').toLowerCase();
   const lookup = {
     created: 'Created',
-    assigned: 'Assigned',
+    assigned: 'In Progress',
     in_progress: 'In Progress',
     on_hold: 'On Hold',
     resolved: 'Resolved',
@@ -53,54 +52,27 @@ const normalizeStatus = (value) => {
   return lookup[lower] || value || 'Created';
 };
 
-const timeAgo = (date) => {
-  if (!date) return 'recently';
-  const now = new Date();
-  const diffMs = now - new Date(date);
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins} min ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+const formatDate = (dateString) => {
+  if (!dateString) return 'Unknown';
+  const d = new Date(dateString);
+  return d.toLocaleDateString('en-GB', { 
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric' 
+  });
 };
 
-const IssueCard = ({ issue, onCardClick, onUpvoteSuccess, staggerIndex = 0 }) => {
-  const [upvotes, setUpvotes] = useState(issue.upvotes || 0);
-  const [isUpvoted, setIsUpvoted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+const formatTime = (dateString) => {
+  if (!dateString) return '--:--';
+  const d = new Date(dateString);
+  return d.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+};
 
-  useEffect(() => {
-    const storedUpvotes = localStorage.getItem(`upvoted_${issue.id}`);
-    setIsUpvoted(!!storedUpvotes);
-  }, [issue.id]);
-
-  const handleUpvote = async (e) => {
-    e.stopPropagation();
-    
-    if (isUpvoted) {
-      toast.error('You already upvoted this issue');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data } = await upvoteComplaint(issue.id);
-      setUpvotes(data.upvotes);
-      setIsUpvoted(true);
-      localStorage.setItem(`upvoted_${issue.id}`, 'true');
-      toast.success('Issue upvoted!');
-      if (onUpvoteSuccess) onUpvoteSuccess(data);
-    } catch (error) {
-      console.error('Upvote failed:', error);
-      toast.error('Failed to upvote');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+const IssueCard = ({ issue, onCardClick, staggerIndex = 0 }) => {
   const categoryLabel = normalizeCategory(issue.category);
   const statusLabel = normalizeStatus(issue.status);
   const categoryColor = CATEGORY_COLORS[categoryLabel] || CATEGORY_COLORS.Other;
@@ -149,30 +121,21 @@ const IssueCard = ({ issue, onCardClick, onUpvoteSuccess, staggerIndex = 0 }) =>
           {truncatedDescription}
         </p>
 
-        {/* Footer: Time, Author, Upvote */}
-        <div className="flex items-center justify-between text-xs text-secondary">
+        {/* Footer: Time, Author */}
+        <div className="flex items-center justify-between text-[10px] text-secondary/60 font-bold uppercase tracking-wider">
           <div className="flex items-center gap-4">
-            <span className="font-medium">{timeAgo(issue.created_at)}</span>
+            <div className="flex items-center gap-1">
+              <Clock size={12} className="opacity-40" />
+              <span>{formatTime(issue.created_at)}</span>
+              <span className="mx-1">•</span>
+              <span>{formatDate(issue.created_at)}</span>
+            </div>
             <span>
-              by {issue.is_anonymous ? 'Anonymous' : issue.submitted_by || issue.student_name || 'Unknown'}
+              by {issue.is_anonymous ? 'Anonymous' : issue.submitted_by || issue.student_name || 'Verified'}
             </span>
           </div>
         </div>
       </div>
-
-      {/* Upvote Button */}
-      <button
-        onClick={handleUpvote}
-        disabled={isLoading || isUpvoted}
-        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 ${
-          isUpvoted
-            ? 'bg-accent-dept/10 border-accent-dept text-accent-dept'
-            : 'bg-white border-gray-200 text-secondary hover:border-accent-dept hover:bg-accent-dept/5 hover:text-accent-dept'
-        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-      >
-        <ThumbsUp size={14} className={isUpvoted ? 'fill-current' : ''} />
-        <span className="text-xs font-semibold">{upvotes}</span>
-      </button>
     </div>
   );
 };

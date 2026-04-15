@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, ShieldCheck, LogOut } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const StaffNavbar = ({ profile }) => {
@@ -11,15 +11,19 @@ const StaffNavbar = ({ profile }) => {
   return (
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-2xl border-b border-gray-100 px-6 py-5">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-8">
           <a href="/staff" className="font-sora font-extrabold text-2xl tracking-tight text-primary flex items-center">
             <span className="text-accent-dept">Staff</span> Workspace
           </a>
-          <div className="h-6 w-px bg-gray-100 hidden sm:block" />
-          <div className="hidden sm:flex items-center space-x-2">
-            <ShieldCheck size={16} className="text-accent-dept opacity-40" />
-            <span className="text-[10px] font-black text-secondary/40 uppercase tracking-[0.2em]">Verified Access</span>
-          </div>
+          
+          {useAuth().user?.role?.toLowerCase() === 'admin' && (
+            <a 
+              href="/admin" 
+              className="text-[10px] font-black uppercase tracking-widest text-secondary/40 hover:text-primary transition-colors border-l border-gray-100 pl-8"
+            >
+              Command Center
+            </a>
+          )}
         </div>
         
         <div className="flex items-center space-x-6">
@@ -27,6 +31,9 @@ const StaffNavbar = ({ profile }) => {
             <p className="text-sm font-black text-primary leading-none mb-1.5">{profile?.name || 'Staff User'}</p>
             <p className="text-[10px] font-bold text-secondary opacity-40 lowercase mb-2">{profile?.email}</p>
             <div className="flex flex-wrap justify-end gap-1.5">
+               <span className="text-[8px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100/50">
+                  Detected Role: {useAuth().user?.role}
+               </span>
                {profile?.roles?.slice(0, 2).map((role, i) => (
                  <span key={i} className="text-[8px] font-black text-secondary/40 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-lg border border-gray-100/50">
                     {role}

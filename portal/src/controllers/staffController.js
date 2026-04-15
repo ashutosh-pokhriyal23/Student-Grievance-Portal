@@ -16,6 +16,23 @@ const MOCK_STAFF = {
 };
 
 /**
+ * Get available statuses (Dynamic Config)
+ */
+exports.getStatuses = async (req, res, next) => {
+  try {
+    const statuses = [
+      { id: 'in_progress', label: 'In Progress', color: 'bg-blue-50 text-blue-700', theme: 'indigo' },
+      { id: 'on_hold', label: 'On Hold', color: 'bg-indigo-50 text-indigo-700', theme: 'slate' },
+      { id: 'resolved', label: 'Resolved', color: 'bg-emerald-50 text-emerald-700', theme: 'emerald' },
+      { id: 'closed', label: 'Closed', color: 'bg-slate-50 text-slate-700', theme: 'slate' },
+    ];
+    res.json({ success: true, data: statuses });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Get Staff Profile & Roles
  */
 exports.getStaffProfile = async (req, res, next) => {
@@ -142,12 +159,36 @@ exports.assignMaintainer = async (req, res, next) => {
 exports.updateStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status: newStatus, comment } = req.body;
 
+    // 1. Fetch current status and space_id
+    const { data: complaint, error: fetchError } = await supabase
+      .from('complaints')
+      .select('status, space_id, status_history')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const oldStatus = complaint.status;
+    const spaceId = complaint.space_id;
+
+    // 2. Append to history
+    const history = Array.isArray(complaint.status_history) ? complaint.status_history : [];
+    const newEntry = {
+      status: newStatus,
+      comment,
+      timestamp: new Date().toISOString(),
+      updated_by: req.user?.name || 'Staff'
+    };
+
+    // 3. Update the complaint
     const { data, error } = await supabase
       .from('complaints')
       .update({ 
-        status, 
+        status: newStatus, 
+        latest_comment: comment,
+        status_history: [...history, newEntry],
         updated_at: new Date() 
       })
       .eq('id', id)
@@ -155,6 +196,19 @@ exports.updateStatus = async (req, res, next) => {
       .single();
 
     if (error) throw error;
+
+    // 4. Update Space Counter Logic
+    const closedStatuses = ['resolved', 'closed'];
+    const wasClosed = closedStatuses.includes(oldStatus?.toLowerCase());
+    const isNowClosed = closedStatuses.includes(newStatus?.toLowerCase());
+
+    if (!wasClosed && isNowClosed) {
+      // Transition from OPEN to CLOSED => Decrement
+      await supabase.rpc('decrement_space_counter', { space_id_param: spaceId });
+    } else if (wasClosed && !isNowClosed) {
+      // Transition from CLOSED to OPEN (Re-open) => Increment
+      await supabase.rpc('increment_space_counter', { space_id_param: spaceId });
+    }
 
     res.json({ success: true, data });
   } catch (error) {

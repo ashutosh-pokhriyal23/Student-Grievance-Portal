@@ -36,19 +36,22 @@ exports.getAllSpaces = async (req, res, next) => {
       .from('spaces')
       .select('*');
 
-    // Fetch complaint counts per space (where status != 'resolved' and status != 'closed')
-    // Note: In a production environment, this could be optimized with a grouping query or a view
-    const { data: counts, error: countsError } = await supabase
+    // Fetch all complaints with their space_id and status for accurate counting
+    const { data: allComplaints, error: countsError } = await supabase
       .from('complaints')
-      .select('space_id')
-      .not('status', 'in', '("resolved", "closed")');
+      .select('space_id, status');
 
-    // Map counts to spaces
+    // 2. Map counts to real spaces with safe fallback
     const baseSpaces = spacesError || !Array.isArray(spaces) || spaces.length === 0 ? FALLBACK_SPACES : spaces;
-    const openCounts = countsError || !Array.isArray(counts) ? [] : counts;
+    
+    // Filter out resolved/closed tickets in JS (case-insensitive)
+    const openComplaints = (allComplaints || []).filter(c => {
+      const status = String(c.status || '').toLowerCase();
+      return !['resolved', 'closed'].includes(status);
+    });
 
     const spaceCounts = baseSpaces.map(space => {
-      const openCount = openCounts.filter(c => c.space_id === space.id).length;
+      const openCount = openComplaints.filter(c => c.space_id === space.id).length;
       return { ...space, open_complaints: openCount };
     });
 

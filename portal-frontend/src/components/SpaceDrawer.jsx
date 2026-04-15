@@ -220,15 +220,7 @@ const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated }) => {
     isDrawerRendered,
   ]);
 
-  const handleIssueUpvoteSuccess = (issueId, updatedIssue) => {
-    const next = issues.map((i) =>
-      i.id === issueId ? { ...i, ...updatedIssue } : i,
-    );
-    setIssues(next);
-    setFilteredIssues(filterIssues(next, activeFilter));
-    if (selectedIssue?.id === issueId)
-      setSelectedIssue((cur) => ({ ...cur, ...updatedIssue }));
-  };
+
 
   if (!isDrawerRendered || !space) return null;
 
@@ -510,9 +502,6 @@ const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated }) => {
                     issue={issue}
                     staggerIndex={index}
                     onCardClick={() => handleIssueClick(issue)}
-                    onUpvoteSuccess={(updatedIssue) =>
-                      handleIssueUpvoteSuccess(issue.id, updatedIssue)
-                    }
                   />
                 </div>
               ))}
@@ -527,29 +516,6 @@ const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated }) => {
         onClose={() => {
           setIsDetailModalOpen(false);
           setSelectedIssue(null);
-        }}
-        onUpvoteSuccess={(updatedIssue) => {
-          if (!selectedIssue?.id) return;
-          const next = issues.map((i) =>
-            i.id === selectedIssue.id
-              ? {
-                  ...i,
-                  ...(updatedIssue || {}),
-                  upvotes: updatedIssue?.upvotes ?? (i.upvotes || 0) + 1,
-                }
-              : i,
-          );
-          setIssues(next);
-          setFilteredIssues(filterIssues(next, activeFilter));
-          setSelectedIssue((cur) =>
-            cur
-              ? {
-                  ...cur,
-                  ...(updatedIssue || {}),
-                  upvotes: updatedIssue?.upvotes ?? (cur.upvotes || 0) + 1,
-                }
-              : cur,
-          );
         }}
       />
 

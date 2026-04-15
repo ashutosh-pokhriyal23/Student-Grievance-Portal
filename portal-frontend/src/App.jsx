@@ -51,41 +51,41 @@ function AppContent() {
 
         {/* Protected Student Routes */}
         <Route path="/" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['student', 'admin', 'director']}>
             <Dashboard />
           </ProtectedRoute>
         } />
         <Route path="/space/:spaceId" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['student', 'admin', 'director']}>
             <SpacePage />
           </ProtectedRoute>
         } />
         <Route path="/complaint/:id" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['student', 'admin', 'director']}>
             <ComplaintDetail />
           </ProtectedRoute>
         } />
 
         {/* Protected Staff Routes */}
         <Route path="/staff" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['teacher', 'staff', 'admin', 'director']}>
             <StaffDashboard />
           </ProtectedRoute>
         } />
         <Route path="/staff/space/:id" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['teacher', 'staff', 'admin', 'director']}>
             <StaffSpaceView />
           </ProtectedRoute>
         } />
 
         {/* Protected Admin Routes */}
         <Route path="/admin" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['admin', 'director']}>
             <AdminDashboard />
           </ProtectedRoute>
         } />
         <Route path="/admin/spaces" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['admin', 'director']}>
             <SpaceHeads />
           </ProtectedRoute>
         } />

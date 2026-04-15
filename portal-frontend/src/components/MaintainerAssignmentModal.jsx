@@ -349,8 +349,8 @@ const MaintainerAssignmentModal = ({
               <Info size={20} />
             </div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-tight leading-relaxed">
-              Delegating a maintainer authorizes them to update status for the
-              selected space. Final oversight remains yours.
+              Assigning a maintainer lets them update the status for the
+              selected space, but you still have the final control.
             </p>
           </div>
         </div>

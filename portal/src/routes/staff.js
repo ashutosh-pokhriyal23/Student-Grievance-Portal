@@ -4,7 +4,7 @@ const staffController = require('../controllers/staffController');
 const authMiddleware = require('../middleware/authMiddleware');
 const requireRole = require('../middleware/roleMiddleware');
 
-// Protect all staff routes — require valid JWT and teacher or admin role
+// Protect all staff routes — require valid JWT (Relaxed for DEV)
 router.use(authMiddleware);
 router.use(requireRole(['teacher', 'admin']));
 
@@ -23,8 +23,10 @@ router.get('/stats', staffController.getStaffStats);
 // GET /api/staff/complaints
 router.get('/complaints', staffController.getStaffComplaints);
 
+// GET /api/staff/statuses
+router.get('/statuses', staffController.getStatuses);
+
 // PATCH /api/staff/complaints/:id/status
 router.patch('/complaints/:id/status', staffController.updateStatus);
 
 module.exports = router;
-

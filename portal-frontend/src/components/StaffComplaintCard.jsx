@@ -3,7 +3,7 @@ import { Clock, User, Shield, MapPin, Users } from 'lucide-react';
 import DeadlineIndicator from './DeadlineIndicator';
 import StatusUpdateDropdown from './StatusUpdateDropdown';
 
-const StaffComplaintCard = ({ complaint, onUpdate, onAssignClick }) => {
+const StaffComplaintCard = ({ complaint, onUpdate, onAssignClick, onClick }) => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'P0': return 'bg-red-500 text-white ring-4 ring-red-500/10';
@@ -14,7 +14,9 @@ const StaffComplaintCard = ({ complaint, onUpdate, onAssignClick }) => {
   };
 
   return (
-    <div className={`group relative bg-white rounded-[40px] p-8 border transition-all duration-700 ${
+    <div 
+      onClick={onClick}
+      className={`group relative bg-white rounded-[40px] p-8 border transition-all duration-700 cursor-pointer ${
       complaint.is_escalated 
         ? 'border-red-200 shadow-[0_20px_60px_rgba(239,68,68,0.1)] scale-[1.02]' 
         : 'border-transparent shadow-[0_15px_45px_rgba(0,0,0,0.02)] hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] hover:-translate-y-3'
@@ -54,7 +56,7 @@ const StaffComplaintCard = ({ complaint, onUpdate, onAssignClick }) => {
       </div>
 
       {/* Management Row */}
-      <div className="flex flex-wrap items-center gap-3 mb-10">
+      <div className="flex flex-wrap items-center gap-3 mb-10" onClick={(e) => e.stopPropagation()}>
         <button 
           onClick={onAssignClick}
           className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3.5 text-[10px] font-black uppercase tracking-[0.22em] text-white transition-all shadow-[0_16px_35px_-15px_rgba(26,26,46,0.55)] border border-primary/10 hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-15px_rgba(26,26,46,0.65)] active:translate-y-0"
@@ -72,11 +74,18 @@ const StaffComplaintCard = ({ complaint, onUpdate, onAssignClick }) => {
       {/* Footer Meta */}
       <div className="pt-8 border-t border-gray-50 flex items-center justify-between">
         <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-2 group/meta">
-            <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover/meta:bg-white transition-colors shadow-sm">
-               <Clock size={16} className="text-secondary/40" />
+          <div className="flex flex-col gap-1.5 min-w-[100px]">
+            <div className="flex items-center space-x-2 group/meta">
+              <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover/meta:bg-white transition-colors shadow-sm">
+                 <Clock size={14} className="text-secondary/40" />
+              </div>
+              <span className="text-[10px] font-black text-secondary/40 uppercase tracking-widest leading-none">
+                {new Date(complaint.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </div>
-            <span className="text-[10px] font-black text-secondary/40 uppercase tracking-widest leading-none">New Issue</span>
+            <div className="text-[9px] font-black text-secondary/30 uppercase tracking-[0.15em] pl-10">
+              {new Date(complaint.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+            </div>
           </div>
           <div className="flex items-center space-x-2 group/meta">
             <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover/meta:bg-white transition-colors shadow-sm">

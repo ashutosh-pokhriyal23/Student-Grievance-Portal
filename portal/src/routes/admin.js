@@ -4,7 +4,7 @@ const adminController = require('../controllers/adminController');
 const authMiddleware = require('../middleware/authMiddleware');
 const requireRole = require('../middleware/roleMiddleware');
 
-// Protect all admin routes — require valid JWT and admin role
+// Protect all admin routes — require valid JWT (Relaxed for DEV)
 router.use(authMiddleware);
 router.use(requireRole(['admin']));
 

@@ -1,29 +1,32 @@
 const supabase = require('../config/supabase');
 const { calculatePriority } = require('../utils/priority');
 const {checkDuplicateAI}=require("../ai/aiService")
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Get all complaints for a specific space
  */
 exports.getComplaintsBySpace = async (req, res, next) => {
   try {
     const { space_id } = req.query;
-    
+
     let query = supabase
       .from('complaints')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (space_id) {
+      // Skip query if space_id is not a valid UUID — avoids Postgres cast error
+      if (!UUID_REGEX.test(space_id)) {
+        return res.json({ success: true, data: [] });
+      }
       query = query.eq('space_id', space_id);
     }
 
     const { data, error } = await query;
     if (error) throw error;
 
-    res.json({
-      success: true,
-      data
-    });
+    res.json({ success: true, data });
   } catch (error) {
     next(error);
   }
@@ -79,42 +82,64 @@ exports.createComplaint = async (req, res, next) => {
 };
 
 /**
- * Upvote a complaint and update its priority
+ * Upvote or un-upvote a complaint (per-user toggle)
  */
 exports.upvoteComplaint = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { action, userId } = req.body;
 
-    // 1. Get current upvotes
-    const { data: complaint, error: fetchError } = await supabase
-      .from('complaints')
-      .select('upvotes')
-      .eq('id', id)
-      .single();
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'userId is required' });
+    }
 
-    if (fetchError) throw fetchError;
+    // Check if user already upvoted
+    const { data: existing, error: checkError } = await supabase
+      .from('complaint_upvotes')
+      .select('id')
+      .eq('complaint_id', id)
+      .eq('user_id', userId)
+      .maybeSingle();
 
-    const newUpvoteCount = (complaint.upvotes || 0) + 1;
+    if (checkError) throw checkError;
+
+    const isUpvoted = !!existing;
+
+    if (action === 'upvote' && !isUpvoted) {
+      const { error: insertError } = await supabase
+        .from('complaint_upvotes')
+        .insert({ complaint_id: id, user_id: userId });
+      if (insertError) throw insertError;
+    } else if (action === 'unvote' && isUpvoted) {
+      const { error: deleteError } = await supabase
+        .from('complaint_upvotes')
+        .delete()
+        .eq('complaint_id', id)
+        .eq('user_id', userId);
+      if (deleteError) throw deleteError;
+    }
+
+    // Recalculate total upvotes
+    const { count, error: countError } = await supabase
+      .from('complaint_upvotes')
+      .select('*', { count: 'exact', head: true })
+      .eq('complaint_id', id);
+
+    if (countError) throw countError;
+
+    const newUpvoteCount = count || 0;
     const newPriority = calculatePriority(newUpvoteCount);
 
-    // 2. Update DB
     const { data: updatedComplaint, error: updateError } = await supabase
       .from('complaints')
-      .update({ 
-        upvotes: newUpvoteCount,
-        priority: newPriority,
-        updated_at: new Date()
-      })
+      .update({ upvotes: newUpvoteCount, priority: newPriority, updated_at: new Date() })
       .eq('id', id)
       .select()
       .single();
 
     if (updateError) throw updateError;
 
-    res.json({
-      success: true,
-      data: updatedComplaint
-    });
+    res.json({ success: true, data: updatedComplaint });
   } catch (error) {
     next(error);
   }
