@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   getAdminOverview, 
   getAdminTrends, 
@@ -17,7 +18,8 @@ import {
   AlertTriangle, 
   Zap, 
   Download,
-  Calendar
+  Calendar,
+  ShieldCheck
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -83,6 +85,13 @@ const AdminDashboard = () => {
             <p className="text-lg text-secondary font-medium">Global tracking and resolution monitoring for Director / Dean.</p>
           </div>
           <div className="flex items-center gap-3">
+             <Link
+               to="/admin/spaces"
+               className="flex items-center space-x-2 px-6 py-4 bg-white border border-indigo-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-indigo-600 hover:text-indigo-700 hover:border-indigo-200 transition-all shadow-sm"
+             >
+                <ShieldCheck size={14} />
+                <span>Space Heads</span>
+             </Link>
              <button className="flex items-center space-x-2 px-6 py-4 bg-white border border-gray-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-secondary hover:text-primary transition-all shadow-sm">
                 <Calendar size={14} />
                 <span>Last 30 Days</span>
