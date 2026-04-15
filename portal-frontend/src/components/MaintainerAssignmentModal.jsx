@@ -23,7 +23,7 @@ const CATEGORY_OPTIONS = [
   { id: 'cultural', label: 'Cultural' },
 ];
 
-const MaintainerAssignmentModal = ({ isOpen, onClose, complaint, onAssigned, spaces = [], profile = null }) => {
+const MaintainerAssignmentModal = ({ isOpen, onClose, complaint, onAssigned, spaces = [] }) => {
   const [maintainerName, setMaintainerName] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [rollSuffix, setRollSuffix] = useState('');
@@ -31,7 +31,6 @@ const MaintainerAssignmentModal = ({ isOpen, onClose, complaint, onAssigned, spa
   const [selectedSpaceId, setSelectedSpaceId] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [maintainerLoading, setMaintainerLoading] = useState(false);
 
   // EXTREMELY ROBUST MAPPING - guaranteed to find units
   const filteredSpaces = useMemo(() => {
@@ -90,7 +89,6 @@ const MaintainerAssignmentModal = ({ isOpen, onClose, complaint, onAssigned, spa
   useEffect(() => {
     if (selectedSpaceId) {
       const fetchCurrent = async () => {
-        setMaintainerLoading(true);
         try {
           const res = await getMaintainers(selectedSpaceId);
           if (res.data && res.data[0]) {
@@ -100,8 +98,6 @@ const MaintainerAssignmentModal = ({ isOpen, onClose, complaint, onAssigned, spa
           }
         } catch (e) {
           console.error(e);
-        } finally {
-          setMaintainerLoading(false);
         }
       };
       fetchCurrent();

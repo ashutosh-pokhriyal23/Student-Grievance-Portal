@@ -1,14 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Building2, 
-  Home, 
-  BookOpen, 
-  Briefcase, 
-  ShieldCheck, 
-  Trophy, 
-  Theater, 
-  ChevronRight 
+import {
+  Building2,
+  Home,
+  BookOpen,
+  Briefcase,
+  ShieldCheck,
+  Trophy,
+  Theater,
+  ChevronRight
 } from 'lucide-react';
 
 const CATEGORY_CONFIG = {
@@ -21,14 +20,14 @@ const CATEGORY_CONFIG = {
   cultural: { icon: Theater, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-100', glow: 'bg-purple-600' },
 };
 
-const SpaceCard = ({ space }) => {
+const SpaceCard = ({ space, onClick }) => {
   const config = CATEGORY_CONFIG[space.type] || CATEGORY_CONFIG.department;
   const Icon = config.icon;
 
   return (
-    <Link 
-      to={`/space/${space.id}`}
-      className={`group relative block p-8 bg-white/70 backdrop-blur-sm rounded-2xl shadow-soft border border-gray-100 card-hover overflow-hidden`}
+    <button
+      onClick={onClick}
+      className={`group relative block w-full p-8 bg-white/70 backdrop-blur-sm rounded-2xl shadow-soft border border-gray-100 card-hover overflow-hidden text-left hover:shadow-lg transition-shadow duration-300`}
     >
       {/* Background Accent Gradient */}
       <div className={`absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full blur-3xl opacity-10 transition-opacity group-hover:opacity-20 ${config.glow}`} />
@@ -64,7 +63,7 @@ const SpaceCard = ({ space }) => {
           <ChevronRight size={16} />
         </div>
       </div>
-    </Link>
+    </button>
   );
 };
 

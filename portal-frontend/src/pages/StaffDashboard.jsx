@@ -146,7 +146,7 @@ const StaffDashboard = () => {
         </div>
 
         {/* Filter Bar */}
-        <div className={`sticky top-24 mb-12 transition-all duration-300 ${!!assigningComplaint ? 'z-0' : 'z-30'}`}>
+        <div className={`sticky top-24 mb-12 transition-all duration-300 ${assigningComplaint ? 'z-0' : 'z-30'}`}>
           <div className="bg-white/60 backdrop-blur-3xl p-3 rounded-[32px] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] border border-white flex flex-col lg:flex-row items-center gap-4">
             <div className="relative w-full lg:w-1/3">
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-secondary opacity-30" size={18} />
