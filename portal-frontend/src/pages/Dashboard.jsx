@@ -62,9 +62,11 @@ const Dashboard = () => {
 
   const fetchSpaces = useCallback(async () => {
     try {
-      const { data } = await getSpaces();
-      setSpaces(data && data.length > 0 ? data : MOCK_SPACES);
-    } catch {
+      // getSpaces() already returns response.data — don't destructure again
+      const data = await getSpaces();
+      setSpaces(Array.isArray(data) && data.length > 0 ? data : MOCK_SPACES);
+    } catch (err) {
+      console.error('[Dashboard] Failed to load spaces:', err.message);
       setSpaces(MOCK_SPACES);
     }
   }, [MOCK_SPACES]);

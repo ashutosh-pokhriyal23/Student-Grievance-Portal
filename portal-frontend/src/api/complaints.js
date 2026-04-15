@@ -1,10 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-const api = axios.create({
-  baseURL: API_URL,
-});
+import api from './client';
 
 export const getSpaces = async () => {
   const response = await api.get('/spaces');
@@ -34,3 +28,4 @@ export const getComplaintById = async (id) => {
 };
 
 export default api;
+

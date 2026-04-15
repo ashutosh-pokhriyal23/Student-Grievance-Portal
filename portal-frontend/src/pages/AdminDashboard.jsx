@@ -19,10 +19,14 @@ import {
   Zap, 
   Download,
   Calendar,
-  ShieldCheck
+  ShieldCheck,
+  LogOut,
+  UserCircle
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard = () => {
+  const { user, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState(null);
   const [trends, setTrends] = useState([]);
@@ -84,25 +88,50 @@ const AdminDashboard = () => {
             </h1>
             <p className="text-lg text-secondary font-medium">Global tracking and resolution monitoring for Director / Dean.</p>
           </div>
-          <div className="flex items-center gap-3">
-             <Link
-               to="/admin/spaces"
-               className="flex items-center space-x-2 px-6 py-4 bg-white border border-indigo-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-indigo-600 hover:text-indigo-700 hover:border-indigo-200 transition-all shadow-sm"
-             >
-                <ShieldCheck size={14} />
-                <span>Space Heads</span>
-             </Link>
-             <button className="flex items-center space-x-2 px-6 py-4 bg-white border border-gray-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-secondary hover:text-primary transition-all shadow-sm">
-                <Calendar size={14} />
-                <span>Last 30 Days</span>
-             </button>
-             <button 
-                onClick={exportData}
-                className="flex items-center space-x-2 px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-xl hover:scale-105 transition-all"
-             >
-                <Download size={14} />
-                <span>Export Audit</span>
-             </button>
+          
+          <div className="flex items-center gap-4 flex-wrap justify-end">
+             {/* Admin Identity Info */}
+             <div className="hidden lg:flex items-center gap-3 pr-4 border-r border-gray-100">
+                <div className="text-right">
+                   <p className="text-[12px] font-black text-primary leading-tight uppercase tracking-tight">{user?.name || "Admin User"}</p>
+                   <p className="text-[10px] font-bold text-secondary opacity-60 lowercase">{user?.email}</p>
+                </div>
+                <div className="h-10 w-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                   <UserCircle size={20} />
+                </div>
+             </div>
+
+             <div className="flex items-center gap-3">
+                <Link
+                  to="/admin/spaces"
+                  className="flex items-center space-x-2 px-6 py-4 bg-white border border-indigo-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-indigo-600 hover:text-indigo-700 hover:border-indigo-200 transition-all shadow-sm"
+                >
+                   <ShieldCheck size={14} />
+                   <span>Space Heads</span>
+                </Link>
+
+                <button className="hidden sm:flex items-center space-x-2 px-6 py-4 bg-white border border-gray-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-secondary hover:text-primary transition-all shadow-sm">
+                   <Calendar size={14} />
+                   <span>Last 30 Days</span>
+                </button>
+
+                <button 
+                   onClick={exportData}
+                   className="flex items-center space-x-2 px-6 py-4 bg-primary text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:shadow-xl hover:scale-105 transition-all"
+                >
+                   <Download size={14} />
+                   <span>Export Audit</span>
+                </button>
+                
+                {/* Logout Action */}
+                <button 
+                   onClick={logout}
+                   className="flex items-center justify-center h-12 w-12 bg-red-50 text-red-500 rounded-2xl border border-red-100/50 hover:bg-red-500 hover:text-white transition-all shadow-sm shadow-red-500/10 active:scale-95"
+                   title="Logout from Command Center"
+                >
+                   <LogOut size={18} />
+                </button>
+             </div>
           </div>
         </div>
 
@@ -200,8 +229,8 @@ const AdminDashboard = () => {
                  {categories.slice(0, 5).map((cat, i) => (
                    <div key={i}>
                       <div className="flex justify-between items-end mb-2">
-                        <span className="text-xs font-black uppercase tracking-widest text-secondary">{cat.category}</span>
-                        <span className="text-sm font-black text-primary">{cat.count} Issues</span>
+                         <span className="text-xs font-black uppercase tracking-widest text-secondary">{cat.category}</span>
+                         <span className="text-sm font-black text-primary">{cat.count} Issues</span>
                       </div>
                       <div className="w-full h-1.5 bg-gray-50 rounded-full overflow-hidden">
                          <div 
