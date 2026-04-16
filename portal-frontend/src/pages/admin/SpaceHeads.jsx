@@ -94,12 +94,10 @@ const SpaceHeads = () => {
   const [viewSpaceId, setViewSpaceId] = useState('');
   const [viewCategory, setViewCategory] = useState('');
   const [formState, setFormState] = useState(initialFormState);
-  const [pendingAssignees, setPendingAssignees] = useState([]);
   const [savedAssignees, setSavedAssignees] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [spaces, setSpaces] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   const selectedSpace = useMemo(
     () => {
@@ -165,13 +163,9 @@ const SpaceHeads = () => {
         department: '',
         teacherId: '',
       }));
-      setPendingAssignees([]);
       return;
     }
 
-    if (name === 'spaceId') {
-      setPendingAssignees([]);
-    }
 
     if (name === 'department') {
       setFormState((current) => ({
@@ -245,16 +239,11 @@ const SpaceHeads = () => {
         ...current,
         teacherId: '',
       }));
-      setPendingAssignees([]);
     } catch (error) {
       console.error('Failed to assign space head:', error);
       toast.error('Assign failed. Try again.');
     }
   }, [formState, loadSavedAssignees, savedAssignees, spaces, teachers]);
-
-  const handleRemovePending = useCallback((index) => {
-    setPendingAssignees((current) => current.filter((_, currentIndex) => currentIndex !== index));
-  }, []);
 
   const handleRemoveSaved = useCallback(async (id) => {
     try {
@@ -292,36 +281,6 @@ const SpaceHeads = () => {
       toast.error('Delete failed. Try again.');
     }
   }, []);
-
-  const handleSave = useCallback(async () => {
-    if (!pendingAssignees.length || saving) {
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      await saveAdminSpaceHeads({
-        assignments: pendingAssignees.map((row) => ({
-          space_id: row.space_id,
-          space_name: row.space_name,
-          teacher_id: row.teacher_id,
-          assigned_date: row.assigned_date,
-        })),
-      });
-
-      toast.success('Saved successfully');
-      setPendingAssignees([]);
-      await loadSavedAssignees(viewSpaceId);
-    } catch (error) {
-      console.error('Failed to save space heads:', error);
-      toast.error('Save failed. Try again.');
-    } finally {
-      setSaving(false);
-    }
-  }, [loadSavedAssignees, pendingAssignees, saving, viewSpaceId]);
-
-  const canSave = pendingAssignees.length > 0 && !saving;
 
   const handleViewCategoryChange = useCallback((category) => {
     setViewCategory(category);
@@ -399,24 +358,11 @@ const SpaceHeads = () => {
             onCategoryChange={handleViewCategoryChange}
             onSpaceChange={handleViewSpaceChange}
             spaces={spaces}
-            pendingRows={pendingAssignees}
             savedRows={savedAssignees}
             onRemove={handleRemoveSaved}
             onDeleteForever={handleDeleteForever}
-            onRemovePending={handleRemovePending}
           />
 
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={!canSave}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-150 ease-out hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
-            >
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              Save Changes
-            </button>
-          </div>
         </div>
       </div>
     </div>

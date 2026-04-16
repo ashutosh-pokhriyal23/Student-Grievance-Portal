@@ -9,7 +9,7 @@ export default function Register() {
   const [role, setRole] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-  
+
   // Click outside logic
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -28,7 +28,7 @@ export default function Register() {
   const [verified, setVerified] = useState(false);
   const [ocrStep, setOcrStep] = useState(0);
   const [verificationStatus, setVerificationStatus] = useState(null);
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,7 +55,7 @@ export default function Register() {
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
-    
+
     // Live validation
     const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (value && !gmailRegex.test(value)) {
@@ -68,16 +68,16 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setServerError('');
-    
+
     if (emailError) return;
     if (!name || !email || !password || !file || !role) {
       setServerError('Please fill out all required fields and upload an ID card.');
       return;
     }
-    
+
     setIsLoading(true);
     setOcrStep(1); // Uploading
-    
+
     // Simulate progression timings for better UX context while waiting for slow OCR
     const timers = [
       setTimeout(() => setOcrStep(2), 2000), // Extracting Text
@@ -85,7 +85,7 @@ export default function Register() {
       setTimeout(() => setOcrStep(4), 6000), // Checking year
       setTimeout(() => setOcrStep(5), 7500), // Finalizing
     ];
-    
+
     try {
       const formData = new FormData();
       formData.append('name', name);
@@ -97,22 +97,31 @@ export default function Register() {
       const { data } = await api.post('/auth/register', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
+
       timers.forEach(t => clearTimeout(t));
 
       setVerified(true);
       setVerificationStatus(data.status); // 'verified', 'pending', etc.
-      
-      // OTP REMOVED: Log in and go home immediately
+
+      // Start the session
       if (data.token) {
         login(data.user, data.token);
       }
-      navigate('/'); 
+
+      // Role-based redirection
+      const userRole = data.user.role || role; // Use returned role or fallback to selected state
+      if (userRole === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (userRole === 'teacher' || userRole === 'staff') {
+        navigate('/staff', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
 
     } catch (err) {
       timers.forEach(t => clearTimeout(t));
       setOcrStep(0);
-      
+
       const data = err.response?.data;
       if (data?.status === 'rejected') {
         setVerified(true);
@@ -129,7 +138,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-gray-900 flex font-dmsans selection:bg-blue-500 selection:text-white transition-opacity duration-300 animate-in fade-in">
       <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative overflow-hidden">
-        
+
         {/* Soft background glows */}
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500/10 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none" />
@@ -147,7 +156,7 @@ export default function Register() {
                 <span>{serverError}</span>
               </div>
             )}
-            
+
             {/* Name Input */}
             <div className="space-y-1.5">
               <label className="text-[12px] font-bold text-gray-500 uppercase tracking-wide">
@@ -157,8 +166,8 @@ export default function Register() {
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
                   <UserCircle size={18} />
                 </div>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-gray-50/50 text-gray-900 border border-gray-200 rounded-xl pl-11 pr-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 placeholder:text-gray-400 font-medium"
@@ -177,8 +186,8 @@ export default function Register() {
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
                   <Mail size={18} />
                 </div>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={email}
                   onChange={handleEmailChange}
                   className={`w-full bg-gray-50/50 text-gray-900 border ${emailError ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500' : 'border-gray-200 focus:ring-blue-500/20 focus:border-blue-500'} rounded-xl pl-11 pr-4 py-3 focus:bg-white focus:outline-none focus:ring-2 transition-all duration-300 placeholder:text-gray-400 font-medium`}
@@ -200,8 +209,8 @@ export default function Register() {
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
                   <Lock size={18} />
                 </div>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-gray-50/50 text-gray-900 border border-gray-200 rounded-xl pl-11 pr-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 placeholder:text-gray-400 font-medium"
@@ -274,14 +283,13 @@ export default function Register() {
               </label>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isLoading || (verified && verificationStatus !== 'rejected') || emailError !== ''}
-              className={`w-full font-bold py-3.5 px-4 rounded-xl transition-all duration-300 mt-8 flex items-center justify-center space-x-2 text-[15px] ${
-                (verified && verificationStatus !== 'rejected') ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 
-                (isLoading || emailError) ? 'bg-blue-600/60 text-white cursor-not-allowed' : 
-                'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 cursor-pointer'
-              }`}
+              className={`w-full font-bold py-3.5 px-4 rounded-xl transition-all duration-300 mt-8 flex items-center justify-center space-x-2 text-[15px] ${(verified && verificationStatus !== 'rejected') ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' :
+                  (isLoading || emailError) ? 'bg-blue-600/60 text-white cursor-not-allowed' :
+                    'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 cursor-pointer'
+                }`}
             >
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-1">
@@ -324,7 +332,7 @@ export default function Register() {
               )}
             </button>
             <div className="text-[14px] text-center text-gray-500 mt-6 font-medium">
-              <span>Already have an account?</span> 
+              <span>Already have an account?</span>
               <Link to="/login" className="ml-1 text-blue-600 hover:text-blue-800 hover:underline font-bold transition-colors">Sign in</Link>
             </div>
           </form>

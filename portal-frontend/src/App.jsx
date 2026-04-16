@@ -17,7 +17,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 function AppContent() {
   const { isLoading } = useAuth();
   const location = useLocation();
-  
+
   // Logic to hide footer on admin pages for cleaner Command Center look
   const hideFooter = location.pathname.startsWith('/admin');
 

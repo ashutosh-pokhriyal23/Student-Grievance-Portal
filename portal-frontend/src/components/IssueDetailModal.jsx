@@ -1,7 +1,8 @@
 import React from 'react';
 import { X, Clock, MapPin, Shield, User, Calendar, MessageSquare, ArrowRight } from 'lucide-react';
 
-const IssueDetailModal = ({ issue, onClose, loading }) => {
+const IssueDetailModal = ({ isOpen, issue, onClose, loading }) => {
+  if (!isOpen) return null;
   if (!issue && !loading) return null;
 
   const formatDate = (dateString) => {
@@ -134,8 +135,8 @@ const IssueDetailModal = ({ issue, onClose, loading }) => {
                               </p>
                               {item.comment && (
                                 <div className="bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm">
-                                  <p className="text-[14px] text-gray-900 font-medium italic">
-                                    "{item.comment}"
+                                  <p className="text-[14px] text-gray-900 font-medium">
+                                    {item.comment}
                                   </p>
                                 </div>
                               )}

@@ -9,11 +9,10 @@ import { Loader2, Plus, X, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { getComplaints } from "../api/complaints";
 import IssueCard from "./IssueCard";
-import IssueDetailModal from "./IssueDetailModal";
 import SubmitIssueModal from "./SubmitIssueModal";
 import AnonymousConfirm from "./AnonymousConfirm";
 
-const FILTER_PILLS = [
+const DEFAULT_FILTERS = [
   "All",
   "Infrastructure",
   "Water",
@@ -33,13 +32,11 @@ const TYPE_META = {
   cultural: { label: "Cultural", color: "#DB2777", bg: "#FCE7F3" },
 };
 
-const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated }) => {
+const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated, onIssueClick }) => {
   const [issues, setIssues] = useState([]);
   const [filteredIssues, setFilteredIssues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
-  const [selectedIssue, setSelectedIssue] = useState(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isSubmitSheetOpen, setIsSubmitSheetOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [submitFormData, setSubmitFormData] = useState(null);
@@ -147,10 +144,19 @@ const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated }) => {
     bg: "#F3F4F6",
   };
 
+  const categoryFilters = useMemo(() => {
+    const type = space?.type?.toLowerCase();
+    return DEFAULT_FILTERS.filter(f => {
+      if (f === "All") return true;
+      if (type === 'department') return f !== "Mess";
+      if (type === 'hostel') return f !== "Academic";
+      return true;
+    });
+  }, [space?.type]);
+
   const handleIssueClick = useCallback((issue) => {
-    setSelectedIssue(issue);
-    setIsDetailModalOpen(true);
-  }, []);
+    if (onIssueClick) onIssueClick(issue);
+  }, [onIssueClick]);
 
   const handleRaiseIssueClick = useCallback(() => {
     setSubmitFormData(null);
@@ -174,8 +180,6 @@ const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated }) => {
 
   const handleCloseDrawer = useCallback(() => {
     handleCloseSubmitSheet();
-    setIsDetailModalOpen(false);
-    setSelectedIssue(null);
     onClose();
   }, [handleCloseSubmitSheet, onClose]);
 
@@ -415,7 +419,7 @@ const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated }) => {
             msOverflowStyle: "none",
           }}
         >
-          {FILTER_PILLS.map((filter) => (
+          {categoryFilters.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
@@ -509,15 +513,6 @@ const SpaceDrawer = ({ isOpen, space, onClose, onIssueCreated }) => {
           )}
         </div>
       </div>
-
-      <IssueDetailModal
-        issue={selectedIssue}
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedIssue(null);
-        }}
-      />
 
       <SubmitIssueModal
         isOpen={isSubmitSheetOpen}

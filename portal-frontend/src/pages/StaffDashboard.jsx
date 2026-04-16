@@ -151,7 +151,7 @@ const StaffDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
           <StatsCard title="Total Assigned" value={stats?.total || 0} icon={Inbox} colorClass="bg-primary/5 text-primary" />
           <StatsCard title="Not Picked" value={stats?.open || 0} icon={Clock} colorClass="bg-amber-100/30 text-amber-600" />
-          <StatsCard title="In Workspace" value={stats?.in_progress || 0} icon={CheckCircle2} colorClass="bg-blue-100/30 text-blue-600" />
+          <StatsCard title="Resolved" value={stats?.resolved || 0} icon={CheckCircle2} colorClass="bg-emerald-100/30 text-emerald-600" />
           <StatsCard title="Past Deadline" value={stats?.escalated || 0} icon={AlertOctagon} colorClass="bg-red-100/30 text-red-600" />
         </div>
 

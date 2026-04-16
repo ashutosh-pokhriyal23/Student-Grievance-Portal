@@ -12,8 +12,8 @@ export const AuthProvider = ({ children }) => {
 
   // Internal helper — clears state without navigating (navigation is caller's job)
   const _clearAuth = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('user');
     setUser(null);
     setIsAuthenticated(false);
   };
@@ -24,8 +24,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const verifyToken = async () => {
-    const token = localStorage.getItem('authToken');
-    
+    const token = sessionStorage.getItem('authToken');
+
     if (!token) {
       setIsLoading(false);
       setIsAuthenticated(false);
@@ -35,18 +35,23 @@ export const AuthProvider = ({ children }) => {
     try {
       // Call backend /verify endpoint (which uses authMiddleware)
       const response = await api.get('/auth/verify');
-      
+
       if (response.data.user) {
-        setUser(response.data.user);
+        const normalizedUser = {
+          ...response.data.user,
+          role: String(response.data.user.role || '').toLowerCase()
+        };
+        setUser(normalizedUser);
         setIsAuthenticated(true);
         // Refresh local storage user data just in case
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        sessionStorage.setItem('user', JSON.stringify(normalizedUser));
       } else {
         throw new Error('Invalid user data');
       }
     } catch (error) {
       console.error('[Auth] Verification failed:', error.response?.data || error.message);
-      _clearAuth();
+      // Temporarily disabled auto-logout to stabilize routing during debugging
+      // _clearAuth();
     } finally {
       setIsLoading(false);
     }
@@ -72,9 +77,17 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isLoading,
     login: (userData, token) => {
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
+      // Nuke any stale session data before starting new one
+      _clearAuth();
+      
+      const normalizedUser = {
+        ...userData,
+        role: String(userData.role || '').toLowerCase()
+      };
+      
+      sessionStorage.setItem('authToken', token);
+      sessionStorage.setItem('user', JSON.stringify(normalizedUser));
+      setUser(normalizedUser);
       setIsAuthenticated(true);
     },
     logout

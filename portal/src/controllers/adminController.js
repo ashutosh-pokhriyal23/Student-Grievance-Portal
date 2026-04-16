@@ -73,7 +73,7 @@ exports.getOverview = async (req, res, next) => {
     }
 
     const total = complaints.length;
-    const resolved = complaints.filter(c => ['resolved', 'closed'].includes(c.status)).length;
+    const resolved = complaints.filter(c => ['resolved', 'closed'].includes(String(c.status || '').toLowerCase())).length;
     const active = total - resolved;
     
     const escalated = complaints.filter(c => {

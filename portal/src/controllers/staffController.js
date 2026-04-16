@@ -56,10 +56,12 @@ exports.getStaffStats = async (req, res, next) => {
 
     const stats = {
       total: complaints.length,
-      open: complaints.filter(c => c.status === 'created' || c.status === 'assigned').length,
-      in_progress: complaints.filter(c => c.status === 'in_progress').length,
+      open: complaints.filter(c => ['created', 'assigned'].includes(String(c.status || '').toLowerCase())).length,
+      in_progress: complaints.filter(c => String(c.status || '').toLowerCase() === 'in_progress').length,
+      resolved: complaints.filter(c => ['resolved', 'closed'].includes(String(c.status || '').toLowerCase())).length,
       escalated: complaints.filter(c => {
-        if (['resolved', 'closed'].includes(c.status)) return false;
+        const status = String(c.status || '').toLowerCase();
+        if (['resolved', 'closed'].includes(status)) return false;
         const deadline = new Date(c.created_at).getTime() + (SLA_TIERS[c.priority] || SLA_TIERS.P2);
         return Date.now() > deadline;
       }).length
@@ -95,7 +97,7 @@ exports.getStaffComplaints = async (req, res, next) => {
       const deadline = new Date(c.created_at).getTime() + (SLA_TIERS[c.priority] || SLA_TIERS.P2);
       return {
         ...c,
-        is_escalated: !['resolved', 'closed'].includes(c.status) && Date.now() > deadline,
+        is_escalated: !['resolved', 'closed'].includes(String(c.status || '').toLowerCase()) && Date.now() > deadline,
         deadline
       };
     });
@@ -112,8 +114,6 @@ exports.getStaffComplaints = async (req, res, next) => {
 exports.getMaintainers = async (req, res, next) => {
   try {
     const { space_id } = req.query;
-    // In real app, fetch from maintainers table. 
-    // Here we generate realistic mock data based on space
     const mockMaintainers = [
       { id: 'm1', name: 'Ayush Sharma', roll_suffix: '02', space_id: space_id },
       { id: 'm2', name: 'Amit Verma', roll_suffix: '15', space_id: space_id },
@@ -133,12 +133,10 @@ exports.assignMaintainer = async (req, res, next) => {
     const { id } = req.params;
     const { maintainer_id } = req.body;
 
-    // Update complaint with maintainer and set status to assigned
     const { data, error } = await supabase
       .from('complaints')
       .update({ 
         status: 'assigned',
-        // maintainer_id would be a column here in a full schema
         updated_at: new Date() 
       })
       .eq('id', id)
@@ -161,7 +159,6 @@ exports.updateStatus = async (req, res, next) => {
     const { id } = req.params;
     const { status: newStatus, comment } = req.body;
 
-    // 1. Fetch current status and space_id
     const { data: complaint, error: fetchError } = await supabase
       .from('complaints')
       .select('status, space_id, status_history')
@@ -173,7 +170,6 @@ exports.updateStatus = async (req, res, next) => {
     const oldStatus = complaint.status;
     const spaceId = complaint.space_id;
 
-    // 2. Append to history
     const history = Array.isArray(complaint.status_history) ? complaint.status_history : [];
     const newEntry = {
       status: newStatus,
@@ -182,7 +178,6 @@ exports.updateStatus = async (req, res, next) => {
       updated_by: req.user?.name || 'Staff'
     };
 
-    // 3. Update the complaint
     const { data, error } = await supabase
       .from('complaints')
       .update({ 
@@ -197,16 +192,13 @@ exports.updateStatus = async (req, res, next) => {
 
     if (error) throw error;
 
-    // 4. Update Space Counter Logic
     const closedStatuses = ['resolved', 'closed'];
-    const wasClosed = closedStatuses.includes(oldStatus?.toLowerCase());
-    const isNowClosed = closedStatuses.includes(newStatus?.toLowerCase());
+    const wasClosed = closedStatuses.includes(String(oldStatus || '').toLowerCase());
+    const isNowClosed = closedStatuses.includes(String(newStatus || '').toLowerCase());
 
     if (!wasClosed && isNowClosed) {
-      // Transition from OPEN to CLOSED => Decrement
       await supabase.rpc('decrement_space_counter', { space_id_param: spaceId });
     } else if (wasClosed && !isNowClosed) {
-      // Transition from CLOSED to OPEN (Re-open) => Increment
       await supabase.rpc('increment_space_counter', { space_id_param: spaceId });
     }
 

@@ -3,6 +3,7 @@ import { getSpaces } from '../api/complaints';
 import StudentNavbar from '../components/StudentNavbar';
 import SpaceCard from '../components/SpaceCard';
 import SpaceDrawer from '../components/SpaceDrawer';
+import IssueDetailModal from '../components/IssueDetailModal';
 import {
   LayoutGrid,
   Search,
@@ -48,6 +49,8 @@ const Dashboard = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedSpace, setSelectedSpace] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const scrollRef = useRef(null);
 
   const CATEGORIES = [
@@ -272,8 +275,21 @@ const Dashboard = () => {
           setIsDrawerOpen(false);
           setSelectedSpace(null);
         }}
+        onIssueClick={(issue) => {
+          setSelectedIssue(issue);
+          setIsDetailModalOpen(true);
+        }}
         onIssueCreated={() => {
           // Refresh spaces or handle new issue creation
+        }}
+      />
+
+      <IssueDetailModal
+        isOpen={isDetailModalOpen}
+        issue={selectedIssue}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedIssue(null);
         }}
       />
     </div>
